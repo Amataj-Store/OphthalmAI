@@ -29,7 +29,7 @@ def get_base64_image(image_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-b64_ojo = get_base64_image("ojo_portada.jpg")
+b64_ojo = get_base64_image("ojo_portada.png")
 # Si por alguna razón no encuentra el archivo, pone uno de internet por defecto
 IMG_SRC = f"data:image/jpeg;base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
 
