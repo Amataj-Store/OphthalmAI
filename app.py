@@ -1,6 +1,6 @@
 """
 app.py – Hospital Rísquez · OphthalmAI v3.5
-Diseño Arena.site + Ojo Personalizado con Láser de Escaneo
+Diseño Arena.site + Ojo Personalizado con Láser de Escaneo (Versión PNG)
 """
 
 import streamlit as st
@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
-# FUNCIÓN PARA CARGAR LA IMAGEN LOCAL DEL OJO
+# FUNCIÓN PARA CARGAR LA IMAGEN LOCAL DEL OJO (AHORA EN PNG)
 # ──────────────────────────────────────────────────────────────────────────────
 def get_base64_image(image_path):
     if os.path.exists(image_path):
@@ -29,9 +29,11 @@ def get_base64_image(image_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
+# BUSCAMOS EL ARCHIVO PNG EXACTO QUE SUBISTE A GITHUB
 b64_ojo = get_base64_image("ojo_portada.png")
-# Si por alguna razón no encuentra el archivo, pone uno de internet por defecto
-IMG_SRC = f"data:image/jpeg;base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
+
+# Cambiamos a data:image/png
+IMG_SRC = f"data:image/png;base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -89,13 +91,12 @@ st.markdown("""
     background-size: 40px 40px;
     color: var(--text-main) !important;
     font-family: 'DM Sans', sans-serif;
-}
-[data-testid="stSidebar"] {
+}[data-testid="stSidebar"] {
     background: var(--navy-mid) !important;
     border-right: 1px solid var(--glass-brd) !important;
 }
 
-/* LOGO SIMPLE */
+/* LOGO SIMPLE EN SIDEBAR */
 .sidebar-logo { text-align:center; padding:20px 16px; border-bottom:1px solid var(--glass-brd); margin-bottom:10px; }
 .logo-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--text-main); letter-spacing:1px; }
 .logo-title span { color:var(--teal); }
@@ -118,14 +119,13 @@ st.markdown("""
 /* ========================================================= */
 .ojo-container {
     position: relative;
-    width: 280px;  /* OJO GIGANTE */
+    width: 280px;  
     height: 280px;
     margin: 0 auto 30px auto;
     border-radius: 50%;
-    /* Difumina los bordes de la imagen para que se funda con el fondo */
+    /* Difumina los bordes de la imagen (hace que el fondo del PNG se funda en negro) */
     mask-image: radial-gradient(circle, black 40%, transparent 70%);
     -webkit-mask-image: radial-gradient(circle, black 40%, transparent 70%);
-    /* Animación de flotar */
     animation: float-eye 6s ease-in-out infinite;
 }
 .ojo-imagen {
@@ -134,7 +134,7 @@ st.markdown("""
     object-fit: cover;
     border-radius: 50%;
 }
-/* El láser que baja escaneando */
+/* Línea de escáner */
 .scanner-line {
     position: absolute;
     top: 0;
@@ -162,19 +162,20 @@ st.markdown("""
 .welcome-screen h2 { font-family:'Syne',sans-serif!important; font-weight:800; font-size:2rem; color:var(--text-main)!important; margin:0 0 8px!important; }
 .welcome-screen p { color:var(--text-muted); font-size:0.95rem; max-width:500px; margin:0 auto; line-height:1.8; }
 
-/* HEADER SUPERIOR LIMPIO */
+/* HEADER SUPERIOR */
 .hud-header{display:flex;align-items:center;padding:10px 0 20px;border-bottom:1px solid var(--glass-brd);margin-bottom:20px;}
 .hud-title h1{font-family:'Syne',sans-serif!important;font-weight:800!important;font-size:1.8rem!important;color:var(--text-main)!important;margin:0!important;}
 .hud-title h1 em{font-style:normal;color:var(--teal);}
 .hud-meta{margin-left:auto;text-align:right;font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--text-muted);}
 
-/* Botones y Badges */
+/* BADGES Y BOTONES */
 .model-badge{display:flex;align-items:center;gap:7px;background:rgba(0,229,216,0.05);border:1px solid rgba(0,229,216,0.18);border-radius:6px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin:8px 0 2px;}
 .mb-dot{width:6px;height:6px;background:var(--green-ok);border-radius:50%;box-shadow:0 0 6px var(--green-ok);flex-shrink:0;animation:blink 1.8s ease-in-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
-/* ESTILOS GENERALES */[data-testid="stSidebar"] label, .stTextInput label {font-family:'Space Mono',monospace!important;font-size:0.62rem!important;color:var(--text-muted)!important;text-transform:uppercase;}[data-testid="stSidebar"] input, .stTextInput input, textarea {background:rgba(5,10,20,0.9)!important;color:var(--teal)!important;border:1px solid var(--glass-brd)!important;border-radius:8px!important;font-family:'Space Mono',monospace!important;font-size:0.82rem!important;}
-[data-testid="stSidebar"] input:focus, textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(0,229,216,0.12)!important;}
+/* COMPONENTES DE STREAMLIT */
+[data-testid="stSidebar"] label, .stTextInput label {font-family:'Space Mono',monospace!important;font-size:0.62rem!important;color:var(--text-muted)!important;text-transform:uppercase;}
+[data-testid="stSidebar"] input, .stTextInput input, textarea {background:rgba(5,10,20,0.9)!important;color:var(--teal)!important;border:1px solid var(--glass-brd)!important;border-radius:8px!important;font-family:'Space Mono',monospace!important;font-size:0.82rem!important;}[data-testid="stSidebar"] input:focus, textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(0,229,216,0.12)!important;}
 
 .stButton>button {background:transparent!important;color:var(--teal)!important;font-family:'Syne',sans-serif!important;font-weight:700!important;font-size:0.8rem!important;border:1px solid var(--teal)!important;border-radius:8px!important;padding:10px 20px!important;width:100%!important;transition:all 0.2s ease!important;}
 .stButton>button:hover {background:var(--teal)!important;color:var(--void)!important;box-shadow:0 0 20px rgba(0,229,216,0.4)!important;}
@@ -183,7 +184,7 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
 [data-testid="stChatMessage"]{background:var(--panel)!important;border:1px solid var(--glass-brd)!important;border-radius:12px!important;backdrop-filter:blur(12px);}
 [data-testid="stImage"] img{border-radius:10px!important;border:1px solid var(--glass-brd)!important;}[data-testid="stFileUploader"]{background:rgba(5,10,20,0.8)!important;border:1px dashed var(--glass-brd)!important;}
 
-/* Cards del paciente */
+/* VISTAS SECUNDARIAS */
 .s-section{font-family:'Space Mono',monospace;font-size:0.58rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:2px;padding:12px 0 5px;border-top:1px solid var(--glass-brd);margin-top:8px;}
 .s-info{background:rgba(0,229,216,0.03);border:1px solid var(--glass-brd);border-radius:8px;padding:10px 13px;font-size:0.8rem;color:var(--text-muted);line-height:1.65;margin-top:6px;}
 .session-card{background:linear-gradient(135deg,rgba(0,229,216,0.07),rgba(0,207,255,0.03));border:1px solid var(--glass-brd);border-radius:10px;padding:12px 14px 12px 18px;margin-top:8px;position:relative;}
@@ -208,7 +209,7 @@ defaults = {
     "total_consultas": 0,
     "view":            "chat",
     "paciente_data":   {},
-    "session_idx":     0, # Indice para vaciar las fotos
+    "session_idx":     0, # Índice para limpiar archivos subidos
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -225,7 +226,7 @@ with st.sidebar:
     </div>
     <div class="model-badge">
         <div class="mb-dot"></div>
-        EfficientNetB0 · Local · Sin Internet
+        EfficientNetB0 · Nube AI
     </div>
     """, unsafe_allow_html=True)
 
@@ -289,7 +290,6 @@ with st.sidebar:
             else:
                 st.error("Complete ambos campos.")
     else:
-        # BORRADO LIMPIO DE LA SESIÓN Y FOTOS
         if st.button("⏹  FINALIZAR CONSULTA"):
             for k, v in defaults.items():
                 if k != "session_idx":
@@ -347,12 +347,11 @@ st.markdown("""
         <h1>Ophthalm<em>AI</em></h1>
     </div>
     <div class="hud-meta">
-        <div class="ver">v3.5-LOCAL</div>
+        <div class="ver">v3.5-CLOUD</div>
         <div>EfficientNetB0 · Tesis UCV</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 
 view = st.session_state.view
 
@@ -362,7 +361,7 @@ view = st.session_state.view
 if view == "chat":
 
     if not st.session_state.session_active:
-        # PANTALLA DE INICIO CON EL OJO DIFUMINADO Y EL LÁSER ESCÁNER
+        # PANTALLA DE INICIO CON LA IMAGEN PNG SUBLIME
         st.markdown(f"""
         <div class="welcome-screen">
             <div class="ws-tr"></div><div class="ws-bl"></div>
@@ -373,12 +372,12 @@ if view == "chat":
             </div>
             
             <h2>OphthalmAI en espera</h2>
-            <p>Sistema diagnóstico asistido por Inteligencia Artificial (EfficientNetB0). Especializado en la detección de <strong>Úlceras Corneales</strong> y <strong>Uveítis Anterior</strong>.<br><br><span style="color:var(--teal);">// INICIE SESIÓN EN EL PANEL LATERAL PARA COMENZAR //</span></p>
+            <p>Sistema diagnóstico asistido por Inteligencia Artificial (EfficientNetB0). Especializado en la detección de <strong>Úlceras Corneales</strong> y <strong>Uveítis Anterior</strong>.</p>
+            <br><span style="font-family:Space Mono, monospace; color:var(--teal); font-size:0.8rem; letter-spacing: 2px;">// INICIE SESIÓN EN EL PANEL LATERAL PARA COMENZAR //</span>
         </div>
         """, unsafe_allow_html=True)
 
     else:
-        # Mostrar Historial si lo hay
         if st.session_state.patient_id:
             visitas_prev = database.obtener_visitas_paciente(st.session_state.patient_id)
             if len(visitas_prev) > 1:
@@ -408,7 +407,6 @@ if view == "chat":
                     else:
                         st.warning("Escriba una nota antes de guardar.")
 
-        # Imprimir Chat
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
