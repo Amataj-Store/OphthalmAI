@@ -16,7 +16,7 @@ try:
     import tensorflow as tf
     if os.path.exists(MODELO_PATH):
         cnn_model = tf.keras.models.load_model(MODELO_PATH)
-        clases_nombres = ['sano', 'ulcera', 'uveitis']
+        clases_nombres =['sano', 'ulcera', 'uveitis']
     else:
         cnn_model = None
 except Exception:
@@ -46,15 +46,12 @@ PROTOCOLO_ULCERA = """**⚠️ PROTOCOLO: ÚLCERA CORNEAL / QUERATITIS INFECCIOS
 - **Tratamiento Reforzado:** Vancomicina + Ceftazidima alternados cada hora.
 - 🚫 **Contraindicación Absoluta:** No usar esteroides en fase activa infecciosa."""
 
-# La pregunta de cierre que pidió el Doctor
-PREGUNTA_FINAL = "\n\n*Evaluación registrada en el sistema. Doctor, ¿qué desea hacer ahora? ¿Analizar otro síntoma, registrar una nueva evolución o consultar el historial?*"
+PREGUNTA_FINAL = "\n\n*Evaluación registrada. Doctor, ¿qué desea hacer ahora? ¿Analizar otro síntoma, registrar la evolución arriba o consultar otro historial en el menú lateral?*"
 
 def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
     texto = texto_doctor.lower().strip()
     
-    # =====================================================================
     # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
-    # =====================================================================
     if "tratamiento" in texto or "protocolo" in texto or "medicamento" in texto or "que le receto" in texto:
         if "uveitis" in texto or "uveítis" in texto:
             return f"Claro, Doctor. Aquí tiene el manejo indicado:\n\n{PROTOCOLO_UVEITIS}{PREGUNTA_FINAL}"
@@ -63,29 +60,25 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
         else:
             return "Por favor especifique de qué patología desea el protocolo: ¿Úlcera Corneal o Uveítis Anterior?"
 
-    # =====================================================================
     # 2. CONVERSACIÓN FLUIDA (Saludos, Gracias, etc.)
-    # =====================================================================
     if any(s in texto for s in["gracias", "listo", "excelente", "perfecto", "ok", "mas nada"]):
-        return "¿Desea registrar algo más en la ficha de este paciente, consultar un historial previo, o finalizamos la consulta?"
+        return "¿Desea registrar algo más en la evolución de este paciente, consultar un historial en el menú lateral, o finalizamos la consulta?"
 
     if any(s in texto for s in["hola", "buenos", "buenas", "saludos"]):
         return "¡Saludos, Doctor! Especialidad: **Úlceras y Uveítis**. Puede pedirme un tratamiento directo, subir una foto, o describir los síntomas. ¿Qué desea hacer?"
 
-    # =====================================================================
     # 3. EVALUACIÓN DE IMÁGENES
-    # =====================================================================
     if lista_imagenes:
         clase_detectada, prob = procesar_imagen_real(lista_imagenes[0])
         
-        if clase_detectada is not None: # Si TensorFlow está activo
+        if clase_detectada is not None:
             if clase_detectada == 'ulcera':
                 diag, trat = f"Úlcera Corneal (CNN: {prob:.1f}%)", PROTOCOLO_ULCERA
             elif clase_detectada == 'uveitis':
                 diag, trat = f"Uveítis Anterior (CNN: {prob:.1f}%)", PROTOCOLO_UVEITIS
             else:
-                diag, trat = f"Segmento Sano (CNN: {prob:.1f}%)", "Sin alteraciones. Lágrimas artificiales si hay molestia."
-        else: # MODO SIMULADO (Laptop)
+                diag, trat = f"Segmento Sano (CNN: {prob:.1f}%)", "Sin alteraciones graves evidentes. Lágrimas artificiales si hay molestia."
+        else:
             if "ulcera" in texto or "secrecion" in texto or "rojo" in texto:
                 diag, trat = "Úlcera Corneal (Simulado)", PROTOCOLO_ULCERA
             elif "uveitis" in texto or "dolor" in texto or "fotofobia" in texto:
@@ -96,4 +89,4 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
         return f"🩺 **Impresión Diagnóstica:** {diag}\n\n💊 **Orientación Terapéutica:**\n{trat}{PREGUNTA_FINAL}"
     
     else:
-        return "Para emitir una probabilidad diagnóstica, por favor suba las fotografías en el panel lateral, o si solo requiere revisar el texto, solicite el protocolo específico."
+        return "Para emitir una probabilidad diagnóstica de la Tesis, por favor suba las fotografías en el panel lateral, o si solo requiere revisar el texto, solicite el protocolo específico."
