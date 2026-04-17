@@ -12,7 +12,7 @@ import os
 DIRECTORIO_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 MODELO_PATH = os.path.join(DIRECTORIO_ACTUAL, "modelo_oftalmologia.h5")
 
-# Umbral clínico: Si la CNN no está al menos 50% segura, no arriesga diagnóstico
+# Umbral clínico
 UMBRAL_CONFIANZA = 50.0 
 
 # ════════════════════════════════════════════════════════
@@ -20,19 +20,27 @@ UMBRAL_CONFIANZA = 50.0
 # ════════════════════════════════════════════════════════
 cnn_model = None
 clases_nombres = []
-ERROR_CARGA = None  # Aquí guardaremos el error si el modelo no carga
+ERROR_CARGA = None  
 
-# 1. Verificar si el archivo .h5 existe en la carpeta
 if not os.path.exists(MODELO_PATH):
-    ERROR_CARGA = f"⚠️ ERROR DE SISTEMA: No se encuentra el archivo del modelo en la ruta: `{MODELO_PATH}`. El sistema funciona en Modo Simulado."
+    ERROR_CARGA = f"⚠️ ERROR DE SISTEMA: No se encuentra el archivo en la ruta: `{MODELO_PATH}`"
 else:
-    # 2. Si existe, intentar importar TensorFlow y cargarlo
     try:
         import tensorflow as tf
-        cnn_model = tf.keras.models.load_model(MODELO_PATH)
+        
+        # TRUCO 1: Normalizar la ruta por si hay espacios o caracteres en español
+        # que a h5py le cuesta leer en Windows/Linux
+        ruta_segura = os.path.normpath(MODELO_PATH)
+        
+        # TRUCO 2: Cargar sin compilar. Evita errores de metadatos de entrenamiento
+        # que suelen variar entre Colab y Local/Cloud.
+        cnn_model = tf.keras.models.load_model(ruta_segura, compile=False)
+        
         clases_nombres = ['sano', 'ulcera', 'uveitis']
+        
     except Exception as e:
-        ERROR_CARGA = f"⚠️ ERROR CARGANDO TENSORFLOW/MODELO: `{e}`. El sistema funciona en Modo Simulado."
+        # Si aún falla, capturamos el error exacto con la ruta que intentó usar
+        ERROR_CARGA = f"⚠️ ERROR CARGANDO TENSORFLOW/MODELO en ruta `{ruta_segura}`: `{e}`"
         cnn_model = None
 # ════════════════════════════════════════════════════════
 
