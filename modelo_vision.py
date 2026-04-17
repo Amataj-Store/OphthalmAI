@@ -81,7 +81,7 @@ SINTOMAS_ULCERA = ["secrecion", "lagrimeo", "dolor corneal", "mancha blanca", "h
 def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
     texto = texto_doctor.lower().strip()
     
-    # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
+        # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
     if any(p in texto for p in ["tratamiento", "protocolo", "medicamento", "recet", "manejo"]):
         if "uveitis" in texto or "uveítis" in texto:
             return f"Claro, Doctor. Aquí tiene el manejo indicado:\n\n{PROTOCOLO_UVEITIS}{DISCLAIMER}{PREGUNTA_FINAL}"
@@ -90,59 +90,21 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
         else:
             return "Por favor especifique de qué patología desea el protocolo: ¿Úlcera Corneal o Uveítis Anterior?"
 
-    # 2. CONVERSACIÓN FLUIDA (Saludos, Gracias, etc.)
-    if any(s in texto for s in ["gracias", "listo", "excelente", "perfecto", "ok", "mas nada"]):
-        return "¿Desea registrar algo más en la evolución de este paciente, consultar un historial en el menú lateral, o finalizamos la consulta?"
+    # 2. INTENCIÓN DE NAVEGACIÓN (Historial / Registro)
+    if any(s in texto for s in ["historial", "ver historial", "expediente", "buscar paciente"]):
+        return "¡Por supuesto! Para consultar expedientes previos, diríjase al menú lateral izquierdo y seleccione **📂 Historial**. ¿Le ayudo con algo más en este chat?"
+    if any(s in texto for s in ["registrar", "nuevo paciente", "registro", "crear paciente"]):
+        return "Para ingresar un nuevo paciente al sistema, por favor diríjase a **📋 Registro** en el menú lateral. ¿Hay algo más en lo que pueda asistirle aquí?"
 
-    if any(s in texto for s in ["hola", "buenos", "buenas", "saludos"]):
-        return "¡Saludos, Doctor! Especialidad: **Úlceras y Uveítis**. Puede pedirme un tratamiento directo, subir una foto, o describir los síntomas. ¿Qué desea hacer?"
-
-    # 3. EVALUACIÓN DE IMÁGENES (Si hay fotos en el panel)
-    if lista_imagenes:
-        diagnosticos = []
-        
-        # Analizamos todas las imágenes subidas
-        for i, img_bytes in enumerate(lista_imagenes):
-            clase_detectada, prob = procesar_imagen_real(img_bytes)
-            
-            # Si TensorFlow no cargó o falló la predicción, usamos reglas según el texto (Simulado)
-            if clase_detectada is None:
-                if any(s in texto for s in SINTOMAS_ULCERA):
-                    diagnosticos.append(f"Img {i+1}: Úlcera Corneal (Simulado)")
-                elif any(s in texto for s in SINTOMAS_UVEITIS):
-                    diagnosticos.append(f"Img {i+1}: Uveítis Anterior (Simulado)")
-                else:
-                    diagnosticos.append(f"Img {i+1}: Hallazgo indeterminado (Simulado)")
-                    
-            # Si TensorFlow sí cargó, evaluamos con UMBRAL DE CONFIANZA
-            elif prob < UMBRAL_CONFIANZA:
-                diagnosticos.append(f"Img {i+1}: ⚠️ Imagen dudosa (CNN: {prob:.1f}% - {clase_detectada})")
-                
-            # Si la CNN está segura
-            else:
-                if clase_detectada == 'ulcera':
-                    diagnosticos.append(f"Img {i+1}: ⚠️ Úlcera Corneal (CNN: {prob:.1f}%)")
-                elif clase_detectada == 'uveitis':
-                    diagnosticos.append(f"Img {i+1}: 🔵 Uveítis Anterior (CNN: {prob:.1f}%)")
-                else:
-                    diagnosticos.append(f"Img {i+1}: ✅ Segmento Sano (CNN: {prob:.1f}%)")
-
-        # Decidimos qué protocolo mostrar basado en el peor diagnóstico
-        texto_diagnosticos = "\n".join(diagnosticos)
-        protocolo_a_mostrar = ""
-        
-        # Si cualquier imagen dice úlcera, mostramos protocolo de úlcera (prioridad urgente)
-        if any("úlcer" in d.lower() for d in diagnosticos):
-            protocolo_a_mostrar = PROTOCOLO_ULCERA
-        elif any("uveít" in d.lower() for d in diagnosticos):
-            protocolo_a_mostrar = PROTOCOLO_UVEITIS
-        else:
-            protocolo_a_mostrar = "Sin alteraciones graves evidentes. Lágrimas artificiales si hay molestia."
-
-        return f"🩺 **Impresión Diagnóstica:**\n{texto_diagnosticos}\n\n💊 **Orientación Terapéutica:**\n{protocolo_a_mostrar}{DISCLAIMER}{PREGUNTA_FINAL}"
+    # 3. CONVERSACIÓN FLUIDA (Saludos, Despedidas, Agradecimientos)
+    if any(s in texto for s in ["gracias", "listo", "excelente", "perfecto", "ok", "mas nada", "chao", "hasta luego"]):
+        return "¡A la orden, Doctor! Estoy aquí para asistirle. ¿Desea evaluar otro síntoma, subir una nueva fotografía, o finalizamos la consulta?"
     
-    # 4. NO HAY IMÁGENES, pero el doctor describió síntomas
-    else:
+    if any(s in texto for s in ["hola", "buenos", "buenas", "saludos"]):
+        return "¡Saludos, Doctor! Especialidad activa: **Úlceras y Uveítis**. ¿En qué le puedo ayudar hoy? Puede pedirme un tratamiento, subir una foto, o describir los síntomas."
+
+    # 4. SI DICE SÍNTOMAS PERO NO HAY FOTOS (Evita el bucle de "suba una foto")
+    if not lista_imagenes:
         puntaje_ulcera = sum(1 for s in SINTOMAS_ULCERA if s in texto)
         puntaje_uveitis = sum(1 for s in SINTOMAS_UVEITIS if s in texto)
         
@@ -154,8 +116,7 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
                 sospecha = "Uveítis Anterior"
                 protocolo = PROTOCOLO_UVEITIS
                 
-            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática, suba fotografías en el panel lateral.*{DISCLAIMER}{PREGUNTA_FINAL}"
+            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática con la IA, suba fotografías en el panel lateral.*{DISCLAIMER}{PREGUNTA_FINAL}"
         
-        # Si no hay imágenes y no hay síntomas claros
-        else:
-            return "Para emitir una probabilidad diagnóstica de la Tesis, por favor suba las fotografías en el panel lateral, describa los síntomas del paciente, o solicite un protocolo específico."
+        # Si no hay imágenes y no hay síntomas claros (Fallback más amigable)
+        return "Entendido, Doctor. Puede pedirme un protocolo médico directamente, describir síntomas del paciente, o subir fotografías al panel lateral para el análisis con IA. ¿Qué desea hacer?"
