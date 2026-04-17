@@ -1,6 +1,6 @@
 """
 modelo_vision.py – Hospital Rísquez · OphthalmAI v3.8
-Motor Conversacional Inteligente + Umbrales Clínicos + Diagnóstico de Carga
+Motor Conversacional Inteligente + Umbrales Clínicos + NLP Anti-Bucle
 """
 
 import random
@@ -58,7 +58,6 @@ PROTOCOLO_ULCERA = """**⚠️ PROTOCOLO: ÚLCERA CORNEAL / QUERATITIS INFECCIOS
 - 🚫 **Contraindicación Absoluta:** No usar esteroides en fase activa infecciosa."""
 
 DISCLAIMER = "\n\n*⚠️ OphthalmAI es un sistema de apoyo. Confirmar siempre con lámpara de hendidura y criterio clínico.*"
-PREGUNTA_FINAL = "\n\n*Doctor, ¿qué desea hacer ahora? ¿Analizar otro síntoma, registrar la evolución o consultar un historial?*"
 
 SINTOMAS_UVEITIS = ["fotofobia", "dolor ocular", "ojo rojo", "vision borrosa", "miosis", "tyndall"]
 SINTOMAS_ULCERA = ["secrecion", "lagrimeo", "dolor corneal", "mancha blanca", "hipopion", "queratitis"]
@@ -69,26 +68,31 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
     # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
     if any(p in texto for p in ["tratamiento", "protocolo", "medicamento", "recet", "manejo"]):
         if "uveitis" in texto or "uveítis" in texto:
-            return f"Claro, Doctor. Aquí tiene el manejo indicado:\n\n{PROTOCOLO_UVEITIS}{DISCLAIMER}{PREGUNTA_FINAL}"
+            return f"Claro, Doctor. Aquí tiene el manejo indicado:\n\n{PROTOCOLO_UVEITIS}{DISCLAIMER}"
         elif "ulcera" in texto or "úlcera" in texto or "queratitis" in texto:
-            return f"Claro, Doctor. Aquí tiene el manejo de urgencia:\n\n{PROTOCOLO_ULCERA}{DISCLAIMER}{PREGUNTA_FINAL}"
+            return f"Claro, Doctor. Aquí tiene el manejo de urgencia:\n\n{PROTOCOLO_ULCERA}{DISCLAIMER}"
         else:
             return "Por favor especifique de qué patología desea el protocolo: ¿Úlcera Corneal o Uveítis Anterior?"
 
     # 2. INTENCIÓN DE NAVEGACIÓN (Historial / Registro)
     if any(s in texto for s in ["historial", "ver historial", "expediente", "buscar paciente"]):
-        return "¡Por supuesto! Para consultar expedientes previos, diríjase al menú lateral izquierdo y seleccione **📂 Historial**. ¿Le ayudo con algo más en este chat?"
+        return "¡Por supuesto! Para consultar expedientes previos, diríjase al menú lateral izquierdo y seleccione **📂 Historial**."
     if any(s in texto for s in ["registrar", "nuevo paciente", "registro", "crear paciente"]):
-        return "Para ingresar un nuevo paciente al sistema, por favor diríjase a **📋 Registro** en el menú lateral. ¿Hay algo más en lo que pueda asistirle aquí?"
+        return "Para ingresar un nuevo paciente al sistema, por favor diríjase a **📋 Registro** en el menú lateral."
 
-    # 3. CONVERSACIÓN FLUIDA (Saludos, Despedidas, Agradecimientos)
-    if any(s in texto for s in ["gracias", "listo", "excelente", "perfecto", "ok", "mas nada", "chao", "hasta luego"]):
-        return "¡A la orden, Doctor! Estoy aquí para asistirle. ¿Desea evaluar otro síntoma, subir una nueva fotografía, o finalizamos la consulta?"
+    # 3. CONVERSACIÓN FLUIDA Y CIERRE (Anti-bucle)
+    # Si el doctor quiere terminar, le indicamos el botón y cerramos el chat.
+    if any(s in texto for s in ["terminar", "finalizar", "cerrar", "adios", "chao", "hasta luego", "me voy"]):
+        return "¡Hasta luego, Doctor! Para guardar la sesión y liberar la memoria, presione **⏹ FINALIZAR CONSULTA** en el menú lateral."
+    
+    # Si agradece o da por terminado el tema
+    if any(s in texto for s in ["gracias", "listo", "excelente", "perfecto", "ok", "mas nada", "ya", "entendido"]):
+        return "¡A la orden! Si necesita algo más, puedo analizar otras fotos o buscar protocolos. Si terminamos, recuerde presionar **⏹ FINALIZAR CONSULTA**."
     
     if any(s in texto for s in ["hola", "buenos", "buenas", "saludos"]):
-        return "¡Saludos, Doctor! Especialidad activa: **Úlceras y Uveítis**. ¿En qué le puedo ayudar hoy? Puede pedirme un tratamiento, subir una foto, o describir los síntomas."
+        return "¡Saludos, Doctor! Especialidad activa: **Úlceras y Uveítis**. ¿En qué le puedo ayudar hoy?"
 
-    # 4. EVALUACIÓN DE IMÁGENES (Si hay fotos en el panel - CNN ACTIVA)
+    # 4. EVALUACIÓN DE IMÁGENES (Solo llega aquí si no fue conversación, navegación ni protocolo)
     if lista_imagenes:
         diagnosticos = []
         
@@ -122,7 +126,7 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
         else:
             protocolo_a_mostrar = "Sin alteraciones graves evidentes. Lágrimas artificiales si hay molestia."
 
-        return f"🩺 **Impresión Diagnóstica:**\n{texto_diagnosticos}\n\n💊 **Orientación Terapéutica:**\n{protocolo_a_mostrar}{DISCLAIMER}{PREGUNTA_FINAL}"
+        return f"🩺 **Impresión Diagnóstica:**\n{texto_diagnosticos}\n\n💊 **Orientación Terapéutica:**\n{protocolo_a_mostrar}{DISCLAIMER}"
     
     # 5. NO HAY IMÁGENES, pero el doctor describió síntomas
     else:
@@ -137,7 +141,7 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
                 sospecha = "Uveítis Anterior"
                 protocolo = PROTOCOLO_UVEITIS
                 
-            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática, suba fotografías en el panel lateral.*{DISCLAIMER}{PREGUNTA_FINAL}"
+            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática, suba fotografías en el panel lateral.*{DISCLAIMER}"
         
         # 6. FALLBACK FINAL (Si no hay imágenes, ni síntomas, ni nada reconocible)
         return "Entendido, Doctor. Puede pedirme un protocolo médico directamente, describir síntomas del paciente, o subir fotografías al panel lateral para el análisis con IA. ¿Qué desea hacer?"
