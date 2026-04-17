@@ -197,6 +197,10 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
 # ──────────────────────────────────────────────────────────────────────────────
 database.init_db()
 
+# DIAGNÓSTICO DEL MODELO DE IA (MUY IMPORTANTE PARA SABER SI CARGÓ EL .h5)
+if modelo_vision.ERROR_CARGA:
+    st.error(modelo_vision.ERROR_CARGA, icon="🚨")
+
 defaults = {
     "messages":[], "session_active": False, "doctor_name": "",
     "patient_name": "", "session_idx": 0, "view": "chat",
