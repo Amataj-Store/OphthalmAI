@@ -1,5 +1,4 @@
-tensorflow-cpu==2.15.0
-h5py==3.9.0
 streamlit
+tensorflow-cpu>=2.16.1
 Pillow
 numpy
