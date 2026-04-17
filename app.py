@@ -1,6 +1,6 @@
 """
-app.py – Hospital Rísquez · OphthalmAI v3.6
-Diseño Arena.site — Sin ojo superior, sin errores de espaciado, completo.
+app.py – Hospital Rísquez · OphthalmAI v3.7
+Diseño Arena.site — HUD Futurista, Doble Escáner Láser, Corrección de Markdown
 """
 
 import streamlit as st
@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
-# FUNCIÓN PARA CARGAR LA IMAGEN LOCAL DEL OJO (SOPORTA PNG/JPG)
+# FUNCIÓN PARA CARGAR LA IMAGEN LOCAL DEL OJO
 # ──────────────────────────────────────────────────────────────────────────────
 def get_base64_image(image_path):
     if os.path.exists(image_path):
@@ -34,7 +34,7 @@ if not b64_ojo:
     b64_ojo = get_base64_image("ojo_portada.jpg") 
 
 mime_type = "image/jpeg" if b64_ojo.startswith("/9j/") else "image/png"
-IMG_SRC = f"data:{mime_type};base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
+EYE_SRC = f"data:{mime_type};base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # UTILIDAD: generar resumen
@@ -43,7 +43,7 @@ def _generar_resumen(doctor: str, paciente: str, mensajes: list) -> str:
     from datetime import datetime
     lineas =[
         "=" * 62,
-        "   HOSPITAL RÍSQUEZ · OphthalmAI v3.6",
+        "   HOSPITAL RÍSQUEZ · OphthalmAI v3.7",
         "   RESUMEN DE CONSULTA OFTALMOLÓGICA",
         "=" * 62,
         f"Fecha:    {datetime.now().strftime('%d/%m/%Y %H:%M')}",
@@ -58,144 +58,136 @@ def _generar_resumen(doctor: str, paciente: str, mensajes: list) -> str:
         lineas.append(f"\n[{rol}]\n{msg['content']}\n")
     lineas +=[
         "=" * 62,
-        "Reporte generado por OphthalmAI v3.6 · Hospital Rísquez",
+        "Reporte generado por OphthalmAI v3.7 · Hospital Rísquez",
         "Apoyo diagnóstico — criterio clínico del médico tratante.",
         "=" * 62,
     ]
     return "\n".join(lineas)
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CSS — Pixel-perfect del diseño Arena.site
+# CSS INMERSIVO (Arena.site + Doble Escáner)
 # ──────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
 
 :root {
-    --void:      #020812;
-    --navy-mid:  #080f20;
-    --panel:     rgba(8,20,45,0.85);
+    --void:      #02050a;
+    --navy-mid:  #050a14;
+    --panel:     rgba(5,10,20,0.75);
     --teal:      #00e5d8;
     --teal-dim:  #00857d;
     --cyan:      #00cfff;
     --amber:     #ffb547;
     --green-ok:  #00e59b;
-    --red-alert: #ff3d5a;
     --text-main: #ddeeff;
     --text-muted:#4a7090;
     --glass-brd: rgba(0,229,216,0.14);
-    --scan-line: rgba(0,229,216,0.025);
-}[data-testid="stAppViewContainer"] {
+}
+
+[data-testid="stAppViewContainer"] {
     background-color: var(--void) !important;
-    background-image:
-        linear-gradient(rgba(0,229,216,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,216,0.03) 1px, transparent 1px),
-        repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scan-line) 2px, var(--scan-line) 4px),
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,216,0.07) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 30% at 90% 90%, rgba(0,207,255,0.04) 0%, transparent 55%);
-    background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%, 100% 100%;
+    background-image: 
+        linear-gradient(rgba(0, 229, 216, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 216, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
     color: var(--text-main) !important;
     font-family: 'DM Sans', sans-serif;
-}
-
-[data-testid="stSidebar"] {
+}[data-testid="stSidebar"] {
     background: var(--navy-mid) !important;
     border-right: 1px solid var(--glass-brd) !important;
-    background-image: linear-gradient(180deg, rgba(0,229,216,0.04) 0%, transparent 30%) !important;
-}
-[data-testid="stSidebar"] > div { padding-top: 0 !important; }
-
-/* LOGO Y OJO SIDEBAR */
-.sidebar-logo {
-    text-align: center; padding: 22px 16px 16px; border-bottom: 1px solid var(--glass-brd); margin-bottom: 4px; position: relative;
-}
-.sidebar-logo::before {
-    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--teal), transparent);
-}
-.logo-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--text-main); letter-spacing: 1px; }
-.logo-title span { color: var(--teal); }
-.logo-sub { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 3px; }
-
-.eye-sidebar-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; position: relative; }
-.eye-sidebar-img {
-    width: 120px; height: 120px; object-fit: cover; border-radius: 50%;
-    -webkit-mask-image: radial-gradient(ellipse 55% 55% at center, black 20%, rgba(0,0,0,0.8) 42%, rgba(0,0,0,0.3) 60%, transparent 75%);
-    mask-image: radial-gradient(ellipse 55% 55% at center, black 20%, rgba(0,0,0,0.8) 42%, rgba(0,0,0,0.3) 60%, transparent 75%);
-    filter: drop-shadow(0 0 14px rgba(0,229,216,0.6)) drop-shadow(0 0 30px rgba(0,229,216,0.25));
-    animation: eye-pulse 3.5s ease-in-out infinite;
 }
 
-.model-badge { display: flex; align-items: center; gap: 7px; background: rgba(0,229,216,0.05); border: 1px solid rgba(0,229,216,0.18); border-radius: 6px; padding: 6px 12px; font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--teal); letter-spacing: 1px; text-transform: uppercase; margin: 8px 0 2px; }
-.mb-dot { width: 6px; height: 6px; background: var(--green-ok); border-radius: 50%; box-shadow: 0 0 6px var(--green-ok); flex-shrink: 0; animation: blink 1.8s ease-in-out infinite; }
+/* LOGO SIDEBAR */
+.sidebar-logo { text-align:center; padding:20px 16px 10px; border-bottom:1px solid var(--glass-brd); margin-bottom:10px; }
+.logo-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--text-main); letter-spacing:1px; margin-top: 10px;}
+.logo-title span { color:var(--teal); }
+.logo-sub { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text-muted); letter-spacing:2.5px; text-transform:uppercase; margin-top:2px; }
 
-.s-section { font-family: 'Space Mono', monospace; font-size: 0.58rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 2px; padding: 12px 0 5px; border-top: 1px solid var(--glass-brd); margin-top: 8px; }
-.s-info { background: rgba(0,229,216,0.03); border: 1px solid var(--glass-brd); border-radius: 8px; padding: 10px 13px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.65; margin-top: 6px; }
+/* OJO SIDEBAR CON ESCÁNER */
+.eye-sidebar-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+.eye-sidebar-inner { 
+    position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden;
+    -webkit-mask-image: radial-gradient(ellipse at center, black 20%, rgba(0,0,0,0.8) 45%, transparent 70%);
+    mask-image: radial-gradient(ellipse at center, black 20%, rgba(0,0,0,0.8) 45%, transparent 70%);
+}
+.eye-sidebar-img { width: 100%; height: 100%; object-fit: cover; }
+.scan-line-small {
+    position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: rgba(0,229,216,0.9);
+    box-shadow: 0 0 10px rgba(0,229,216,1); animation: scan-down 3s linear infinite; z-index: 5;
+}
+.eye-sidebar-ring {
+    position: absolute; width: 110px; height: 110px; border-radius: 50%;
+    border: 1px solid rgba(0,229,216,0.3); animation: radar-ring 3s ease-out infinite; pointer-events: none;
+}
 
-.session-card { background: linear-gradient(135deg, rgba(0,229,216,0.07), rgba(0,207,255,0.03)); border: 1px solid var(--glass-brd); border-radius: 10px; padding: 12px 14px 12px 18px; margin-top: 8px; position: relative; overflow: hidden; }
-.session-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--teal), var(--cyan)); }
-.sc-label { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
-.sc-value { font-size: 0.88rem; color: var(--text-main); font-weight: 500; margin-top: 1px; }
+/* OJO GIGANTE CENTRAL CON ESCÁNER */
+.welcome-screen {
+    position: relative; text-align: center; padding: 70px 20px;
+    background: radial-gradient(circle at center, rgba(0,229,216,0.06) 0%, transparent 60%);
+    border: 1px solid rgba(0,229,216,0.03); margin-top: 20px;
+}
+.ws-tr { position:absolute; top:0; right:0; width:40px; height:40px; border-top:2px solid var(--teal); border-right:2px solid var(--teal); opacity:0.6; }
+.ws-bl { position:absolute; bottom:0; left:0; width:40px; height:40px; border-bottom:2px solid var(--teal); border-left:2px solid var(--teal); opacity:0.6; }
 
-[data-testid="stSidebar"] label, .stTextInput label, .stSelectbox label, .stTextArea label, .stNumberInput label { font-family: 'Space Mono', monospace !important; font-size: 0.62rem !important; color: var(--text-muted) !important; text-transform: uppercase; letter-spacing: 1.2px; }[data-testid="stSidebar"] input, .stTextInput input, .stNumberInput input, textarea { background: rgba(5,13,26,0.9) !important; color: var(--teal) !important; border: 1px solid var(--glass-brd) !important; border-radius: 8px !important; font-family: 'Space Mono', monospace !important; font-size: 0.82rem !important; }[data-testid="stSidebar"] input:focus, .stTextInput input:focus, textarea:focus { border-color: var(--teal) !important; box-shadow: 0 0 0 2px rgba(0,229,216,0.12) !important; }
+.eye-hero-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto 30px auto; animation: float-eye 6s ease-in-out infinite; display: flex; justify-content: center; align-items: center; }
+.eye-hero-inner {
+    position: relative; width: 240px; height: 240px; border-radius: 50%; overflow: hidden;
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, rgba(0,0,0,0.8) 50%, transparent 72%);
+    mask-image: radial-gradient(ellipse at center, black 30%, rgba(0,0,0,0.8) 50%, transparent 72%);
+}
+.eye-hero-img { width: 100%; height: 100%; object-fit: cover; }
+.scan-line-large {
+    position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(0,229,216,0.9);
+    box-shadow: 0 0 20px rgba(0,229,216,1); animation: scan-down 3.5s linear infinite; z-index: 5;
+}
+.eye-hero-ring1 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,229,216,0.2); animation: radar-ring 4s ease-out infinite; pointer-events: none; }
+.eye-hero-ring2 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,207,255,0.1); animation: radar-ring 4s ease-out 2s infinite; pointer-events: none; }
 
-.stButton > button { background: transparent !important; color: var(--teal) !important; font-family: 'Syne', sans-serif !important; font-weight: 700 !important; font-size: 0.8rem !important; border: 1px solid var(--teal) !important; border-radius: 8px !important; padding: 10px 20px !important; width: 100% !important; letter-spacing: 1.5px; text-transform: uppercase; transition: all 0.22s ease !important; }
-.stButton > button:hover { color: var(--void) !important; background: var(--teal) !important; box-shadow: 0 0 22px rgba(0,229,216,0.5) !important; transform: translateY(-1px) !important; }
+/* ANIMACIONES GLOBALES */
+@keyframes scan-down { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
+@keyframes float-eye { 0% { transform: translateY(0px); } 50% { transform: translateY(-12px); } 100% { transform: translateY(0px); } }
+@keyframes radar-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+@keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-/* HEADER LIMPIO SIN OJO */
-.hud-header { display: flex; align-items: center; gap: 20px; padding: 18px 0 14px; border-bottom: 1px solid var(--glass-brd); margin-bottom: 16px; position: relative; }
-.hud-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 140px; height: 1px; background: linear-gradient(90deg, var(--teal), transparent); }
-.hud-title h1 { font-family: 'Syne', sans-serif !important; font-weight: 800 !important; font-size: 2rem !important; color: var(--text-main) !important; margin: 0 !important; letter-spacing: -0.5px; line-height: 1; }
-.hud-title h1 em { font-style: normal; color: var(--teal); text-shadow: 0 0 20px rgba(0,229,216,0.5); }
-.hud-subtitle { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
-.hud-meta { margin-left: auto; text-align: right; font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--text-muted); line-height: 1.9; }
-.hud-meta .ver { color: var(--teal); font-weight: 700; }
+.welcome-screen h2 { font-family:'Syne',sans-serif!important; font-weight:800; font-size:2rem; color:var(--text-main)!important; margin:0 0 8px!important; }
+.welcome-screen p { color:var(--text-muted); font-size:0.95rem; max-width:500px; margin:0 auto; line-height:1.8; }
 
-.status-strip { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; padding: 8px 16px; background: var(--panel); border: 1px solid var(--glass-brd); border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--text-muted); flex-wrap: wrap; }
-.indicator { display: flex; align-items: center; gap: 6px; }
-.s-dot { width: 7px; height: 7px; border-radius: 50%; }
-.dot-active { background: var(--green-ok); box-shadow: 0 0 6px var(--green-ok); animation: blink 1.4s ease-in-out infinite; }
-.dot-inactive { background: var(--text-muted); }
+/* HEADER Y DEMÁS UI */
+.hud-header{display:flex;align-items:center;padding:10px 0 20px;border-bottom:1px solid var(--glass-brd);margin-bottom:20px;}
+.hud-title h1{font-family:'Syne',sans-serif!important;font-weight:800!important;font-size:1.8rem!important;color:var(--text-main)!important;margin:0!important;}
+.hud-title h1 em{font-style:normal;color:var(--teal);}
+.hud-meta{margin-left:auto;text-align:right;font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--text-muted);}
 
-/* WELCOME SCREEN ARENA Y OJO GIGANTE */
-.welcome-screen { text-align: center; padding: 60px 40px; border: 1px solid var(--glass-brd); border-radius: 20px; margin-top: 20px; background: linear-gradient(135deg, rgba(0,229,216,0.03) 0%, transparent 50%), var(--panel); position: relative; overflow: hidden; }
-.ws-conic { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, rgba(0,229,216,0.025) 60deg, transparent 120deg); animation: rotate-bg 14s linear infinite; pointer-events: none; z-index: 0; }
-.ws-corner { position: absolute; width: 30px; height: 30px; z-index: 2; }
-.ws-tl { top: 16px; left: 16px; border-top: 1px solid rgba(0,229,216,0.4); border-left: 1px solid rgba(0,229,216,0.4); }
-.ws-tr { top: 16px; right: 16px; border-top: 1px solid rgba(0,229,216,0.4); border-right: 1px solid rgba(0,229,216,0.4); }
-.ws-bl { bottom: 16px; left: 16px; border-bottom: 1px solid rgba(0,229,216,0.4); border-left: 1px solid rgba(0,229,216,0.4); }
-.ws-br { bottom: 16px; right: 16px; border-bottom: 1px solid rgba(0,229,216,0.4); border-right: 1px solid rgba(0,229,216,0.4); }
+.model-badge{display:flex;align-items:center;gap:7px;background:rgba(0,229,216,0.05);border:1px solid rgba(0,229,216,0.18);border-radius:6px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin:8px 0 2px;}
+.mb-dot{width:6px;height:6px;background:var(--green-ok);border-radius:50%;box-shadow:0 0 6px var(--green-ok);flex-shrink:0;animation:blink 1.8s ease-in-out infinite;}
+.s-section{font-family:'Space Mono',monospace;font-size:0.58rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:2px;padding:12px 0 5px;border-top:1px solid var(--glass-brd);margin-top:8px;}
+.s-info{background:rgba(0,229,216,0.03);border:1px solid var(--glass-brd);border-radius:8px;padding:10px 13px;font-size:0.8rem;color:var(--text-muted);line-height:1.65;margin-top:6px;}
 
-.scan-line-anim { position: absolute; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent, rgba(0,229,216,0.8), transparent); animation: scan-down 2.4s linear infinite; border-radius: 1px; pointer-events: none; z-index: 5; box-shadow: 0 2px 10px rgba(0,229,216,0.6); }
-.eye-hero-wrap { position: relative; z-index: 1; display: flex; justify-content: center; margin-bottom: 28px; animation: float-y 4s ease-in-out infinite; }
-.eye-hero-container { position: relative; width: 260px; height: 260px; }
-.eye-hero-img { width: 260px; height: 260px; object-fit: cover; border-radius: 50%; display: block; -webkit-mask-image: radial-gradient(ellipse 52% 52% at center, black 10%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.3) 55%, transparent 72%); mask-image: radial-gradient(ellipse 52% 52% at center, black 10%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.3) 55%, transparent 72%); filter: drop-shadow(0 0 30px rgba(0,229,216,0.6)) drop-shadow(0 0 60px rgba(0,229,216,0.25)); animation: eye-pulse 3.5s ease-in-out infinite; position: relative; z-index: 1; }
-.welcome-screen h2 { font-family: 'Syne', sans-serif !important; font-weight: 800; font-size: 1.8rem; color: var(--text-main) !important; margin: 0 0 8px !important; position: relative; z-index: 1; }
-.welcome-screen p { color: var(--text-muted); font-size: 0.92rem; max-width: 460px; margin: 0 auto; line-height: 1.75; position: relative; z-index: 1; }
-.w-tag { display: inline-block; margin-top: 20px; font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--teal); border: 1px solid var(--glass-brd); border-radius: 4px; padding: 4px 14px; letter-spacing: 1.5px; position: relative; z-index: 1; }
+.session-card{background:var(--panel);border:1px solid var(--glass-brd);border-radius:10px;padding:12px 14px 12px 18px;margin-top:8px;position:relative;}
+.session-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--teal),var(--cyan));}
+.sc-label{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;}
+.sc-value{font-size:0.88rem;color:var(--text-main);font-weight:500;margin-top:1px;}
 
-[data-testid="stChatMessage"] { background: var(--panel) !important; border: 1px solid var(--glass-brd) !important; border-radius: 12px !important; padding: 16px 20px !important; margin-bottom: 10px !important; backdrop-filter: blur(12px); position: relative; animation: fadeInUp 0.3s ease forwards; }
-[data-testid="stChatMessage"]::before { content: ''; position: absolute; top: 0; left: 16px; width: 40px; height: 1px; background: linear-gradient(90deg, var(--teal), transparent); }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) { border-color: rgba(255,181,71,0.2) !important; background: rgba(255,181,71,0.04) !important; }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"])::before { background: linear-gradient(90deg, var(--amber), transparent); }
-[data-testid="stChatInput"] textarea { background: rgba(5,13,26,0.95) !important; color: var(--text-main) !important; border: 1px solid var(--glass-brd) !important; border-radius: 10px !important; font-family: 'DM Sans', sans-serif !important; font-size: 0.9rem !important; }
-[data-testid="stImage"] img { border-radius: 10px !important; border: 1px solid var(--glass-brd) !important; }[data-testid="stFileUploader"] { background: rgba(5,13,26,0.8) !important; border: 1px dashed var(--glass-brd) !important; border-radius: 10px !important; }
-[data-testid="stExpander"] { background: var(--panel) !important; border: 1px solid var(--glass-brd) !important; border-radius: 10px !important; margin-bottom: 8px !important; }
+[data-testid="stSidebar"] label, .stTextInput label {font-family:'Space Mono',monospace!important;font-size:0.62rem!important;color:var(--text-muted)!important;text-transform:uppercase;}[data-testid="stSidebar"] input, .stTextInput input, textarea {background:rgba(5,10,20,0.9)!important;color:var(--teal)!important;border:1px solid var(--glass-brd)!important;border-radius:8px!important;font-family:'Space Mono',monospace!important;font-size:0.82rem!important;}
+[data-testid="stSidebar"] input:focus, textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(0,229,216,0.12)!important;}
+
+.stButton>button {background:transparent!important;color:var(--teal)!important;font-family:'Syne',sans-serif!important;font-weight:700!important;font-size:0.8rem!important;border:1px solid var(--teal)!important;border-radius:8px!important;padding:10px 20px!important;width:100%!important;transition:all 0.2s ease!important;}
+.stButton>button:hover {background:var(--teal)!important;color:var(--void)!important;box-shadow:0 0 20px rgba(0,229,216,0.4)!important;}
+div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!important;font-size:0.72rem!important;border-radius:20px!important;}
+
+[data-testid="stChatMessage"]{background:var(--panel)!important;border:1px solid var(--glass-brd)!important;border-radius:12px!important;backdrop-filter:blur(12px);}[data-testid="stImage"] img{border-radius:10px!important;border:1px solid var(--glass-brd)!important;}
+[data-testid="stFileUploader"]{background:rgba(5,10,20,0.8)!important;border:1px dashed var(--glass-brd)!important;}[data-testid="stExpander"] { background: var(--panel) !important; border: 1px solid var(--glass-brd) !important; border-radius: 10px !important; margin-bottom: 8px !important; }
 [data-testid="stExpander"] summary { font-family: 'Space Mono', monospace !important; font-size: 0.65rem !important; color: var(--text-muted) !important; text-transform: uppercase; letter-spacing: 1.5px; }
 
-/* Chips de síntomas */
-div[data-testid="column"] .stButton>button { font-family:'DM Sans',sans-serif!important;font-size:0.72rem!important;font-weight:500!important;padding:6px 4px!important;letter-spacing:0.3px!important;text-transform:none!important;border-color:rgba(0,229,216,0.25)!important;color:var(--text-muted)!important;border-radius:20px!important;transition:all 0.18s ease!important;white-space:nowrap; }
-div[data-testid="column"] .stButton>button:hover { border-color:var(--teal)!important;color:var(--teal)!important;background:rgba(0,229,216,0.06)!important;box-shadow:0 0 10px rgba(0,229,216,0.2)!important;transform:translateY(-1px)!important; }
+.status-strip{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding:8px 16px;background:var(--panel);border:1px solid var(--glass-brd);border-radius:8px;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--text-muted);flex-wrap:wrap;}
+.indicator{display:flex;align-items:center;gap:6px;}
+.s-dot{width:7px;height:7px;border-radius:50%;}
+.dot-active{background:var(--green-ok);box-shadow:0 0 6px var(--green-ok);animation:blink 1.4s ease-in-out infinite;}
+.dot-inactive{background:var(--text-muted);}
+.dot-img{background:var(--amber);box-shadow:0 0 6px var(--amber);}
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--void); }
-::-webkit-scrollbar-thumb { background: var(--teal-dim); border-radius: 2px; }
-
-@keyframes eye-pulse { 0%,100% { filter: drop-shadow(0 0 12px rgba(0,229,216,0.6)) drop-shadow(0 0 28px rgba(0,229,216,0.3)); } 50% { filter: drop-shadow(0 0 24px rgba(0,229,216,0.9)) drop-shadow(0 0 52px rgba(0,229,216,0.5)); } }
-@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-@keyframes rotate-bg { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-@keyframes scan-down { 0% { top: -4px; opacity: 0.7; } 100% { top: 100%; opacity: 0; } }
-@keyframes float-y { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--void);}::-webkit-scrollbar-thumb{background:var(--teal-dim);border-radius:2px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -215,21 +207,47 @@ for k, v in defaults.items():
         st.session_state[k] = v
 
 # ──────────────────────────────────────────────────────────────────────────────
+# STRINGS DE HTML (Para evitar el error de Markdown)
+# ──────────────────────────────────────────────────────────────────────────────
+SIDEBAR_LOGO_HTML = f"""
+<div class="sidebar-logo">
+    <div class="eye-sidebar-wrap">
+        <div class="eye-sidebar-ring"></div>
+        <div class="eye-sidebar-inner">
+            <img src="{EYE_SRC}" class="eye-sidebar-img">
+            <div class="scan-line-small"></div>
+        </div>
+    </div>
+    <div class="logo-title">Ophthalm<span>AI</span></div>
+    <div class="logo-sub">Hospital Rísquez · Caracas</div>
+</div>
+<div class="model-badge">
+    <div class="mb-dot"></div> EfficientNetB0 · Nube AI
+</div>
+"""
+
+WELCOME_SCREEN_HTML = f"""
+<div class="welcome-screen">
+    <div class="ws-tr"></div><div class="ws-bl"></div>
+    <div class="eye-hero-wrap">
+        <div class="eye-hero-ring1"></div>
+        <div class="eye-hero-ring2"></div>
+        <div class="eye-hero-inner">
+            <img src="{EYE_SRC}" class="eye-hero-img">
+            <div class="scan-line-large"></div>
+        </div>
+    </div>
+    <h2>OphthalmAI en espera</h2>
+    <p>Sistema diagnóstico asistido por Red Neuronal Convolucional (EfficientNetB0). Especializado en la detección de <strong style="color:var(--teal);">Úlceras Corneales</strong> y <strong style="color:var(--teal);">Uveítis</strong>.</p>
+    <br><span style="font-family:Space Mono, monospace; color:var(--teal); font-size:0.8rem; letter-spacing: 2px;">// INICIE SESIÓN EN EL PANEL LATERAL PARA COMENZAR //</span>
+</div>
+"""
+
+# ──────────────────────────────────────────────────────────────────────────────
 # SIDEBAR
 # ──────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown(f"""
-    <div class="sidebar-logo">
-        <div class="eye-sidebar-wrap">
-            <img src="{IMG_SRC}" class="eye-sidebar-img">
-        </div>
-        <div class="logo-title">Ophthalm<span>AI</span></div>
-        <div class="logo-sub">Hospital Rísquez · Caracas</div>
-    </div>
-    <div class="model-badge">
-        <div class="mb-dot"></div> EfficientNetB0 · Nube AI
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(SIDEBAR_LOGO_HTML, unsafe_allow_html=True)
 
     st.markdown('<div class="s-section">Navegación</div>', unsafe_allow_html=True)
     nc = st.columns(2)
@@ -283,6 +301,16 @@ with st.sidebar:
             st.rerun()
 
     if st.session_state.session_active:
+        p = st.session_state.paciente_data
+        st.markdown(f"""
+        <div class="session-card">
+            <div class="sc-label">Doctor</div>
+            <div class="sc-value">{st.session_state.doctor_name}</div>
+            <div class="sc-label" style="margin-top:6px;">Paciente</div>
+            <div class="sc-value">{p.get("nombre_completo", st.session_state.patient_name)}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown('<div class="s-section">Imágenes · Segmento Anterior</div>', unsafe_allow_html=True)
         uploaded_files = st.file_uploader(
             "Fotografías", type=["jpg","jpeg","png"],
@@ -296,7 +324,7 @@ with st.sidebar:
                 cols[i % 2].image(f, use_container_width=True)
             st.markdown('<div style="color:var(--teal);text-align:center;font-size:0.6rem;margin-top:5px;">✓ IMÁGENES LISTAS</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="s-section">Especialidades (Tesis)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="s-section">Especialidades</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="s-info">
         ⚠️ <strong>Úlcera Corneal / Queratitis</strong><br>
@@ -309,14 +337,14 @@ with st.sidebar:
 # ──────────────────────────────────────────────────────────────────────────────
 # MAIN AREA
 # ──────────────────────────────────────────────────────────────────────────────
-st.markdown(f"""
+st.markdown("""
 <div class="hud-header">
     <div class="hud-title">
         <h1>Ophthalm<em>AI</em></h1>
         <div class="hud-subtitle">Úlceras Corneales & Uveítis · Hospital Rísquez · Tesis UCV</div>
     </div>
     <div class="hud-meta">
-        <div class="ver">v3.6-CLOUD</div>
+        <div class="ver">v3.7-CLOUD</div>
         <div>EfficientNetB0</div>
         <div>SQLite · $0 API</div>
     </div>
@@ -331,27 +359,28 @@ view = st.session_state.view
 if view == "chat":
 
     if not st.session_state.session_active:
-        st.markdown(f"""
-        <div class="welcome-screen">
-            <div class="ws-conic"></div>
-            <div class="ws-corner ws-tl"></div><div class="ws-corner ws-tr"></div>
-            <div class="ws-corner ws-bl"></div><div class="ws-corner ws-br"></div>
-
-            <div class="eye-hero-wrap">
-                <div class="eye-hero-container">
-                    <img src="{IMG_SRC}" class="eye-hero-img">
-                    <div class="scan-line-anim" style="top:-4px;"></div>
-                </div>
-            </div>
-
-            <h2>OphthalmAI · en espera</h2>
-            <p>Sistema diagnóstico asistido por Red Neuronal Convolucional (EfficientNetB0). Especializado en la detección de <strong style="color:var(--teal);">Úlceras Corneales</strong> y <strong style="color:var(--teal);">Uveítis</strong>.</p>
-            <br><span style="font-family:Space Mono, monospace; color:var(--teal); font-size:0.8rem; letter-spacing: 2px;">// INICIE SESIÓN EN EL PANEL LATERAL PARA COMENZAR //</span>
-        </div>
-        """, unsafe_allow_html=True)
+        # AQUI INYECTAMOS EL CÓDIGO HTML SIN QUE STREAMLIT LO CONVIERTA EN CÓDIGO TEXTO
+        st.markdown(WELCOME_SCREEN_HTML, unsafe_allow_html=True)
 
     else:
+        p = st.session_state.paciente_data
+        ced_h = f'· CÉD:<span style="color:var(--text-main);"> {p["cedula"]}</span>' if p.get("cedula") else ""
+        
+        # Corrección segura para contar imágenes cargadas
         if "uploaded_files" not in dir(): uploaded_files =[]
+        n_imgs = len(uploaded_files) if uploaded_files else 0
+        img_h = (f'<div class="indicator"><div class="s-dot dot-img"></div>{n_imgs} IMG</div>'
+                 if n_imgs else '<div class="indicator"><div class="s-dot dot-inactive"></div>SIN IMG</div>')
+        
+        st.markdown(f"""
+        <div class="status-strip">
+            <div class="indicator"><div class="s-dot dot-active"></div>SESIÓN ACTIVA</div>
+            <div>PAC:<span style="color:var(--text-main);"> {p.get("nombre_completo",st.session_state.patient_name).upper()}</span> {ced_h}</div>
+            <div>DR:<span style="color:var(--text-main);"> {st.session_state.doctor_name.upper()}</span></div>
+            {img_h}
+            <div style="margin-left:auto;">CNN:<span style="color:var(--green-ok);"> ONLINE</span></div>
+        </div>
+        """, unsafe_allow_html=True)
 
         if st.session_state.patient_id:
             visitas = database.obtener_visitas_paciente(st.session_state.patient_id)
