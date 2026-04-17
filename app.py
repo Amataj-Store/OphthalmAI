@@ -359,7 +359,7 @@ st.markdown("""
 <div class="hud-header">
     <div class="hud-title">
         <h1>Ophthalm<em>AI</em></h1>
-        <div class="hud-subtitle">Úlceras Corneales & Uveítis · Hospital Rísquez · Tesis UCV</div>
+        <div class="hud-subtitle">Úlceras Corneales & Uveítis · Hospital Rísquez · Tesis UCS</div>
     </div>
     <div class="hud-meta">
         <div class="ver">v3.7-CLOUD</div>
