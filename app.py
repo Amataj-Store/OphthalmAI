@@ -408,7 +408,7 @@ st.markdown("""
 <div class="hud-header">
     <div class="hud-title">
         <h1>Ophthalm<em>AI</em></h1>
-        <div class="hud-subtitle">Úlceras Corneales & Uveítis · Hospital Rísquez</div>
+        <div class="hud-subtitle">Úlceras Corneales & Uveítis · Hospital Rísquez · Tesis UCV</div>
     </div>
     <div class="hud-meta">
         <div class="ver">v3.8-CLOUD</div>
@@ -542,28 +542,45 @@ if view == "chat":
 # ──────────────────────────────────────────────────────────────────────────────
 elif view == "registro":
     st.markdown("### 📋 Registro de Nuevo Paciente")
+    st.write("---")
     with st.form("form_reg", clear_on_submit=True):
-        c1, c2 = st.columns(2)
+        c1, c2, c3 = st.columns(3)
         nombre = c1.text_input("Nombre Completo *")
         cedula = c2.text_input("Cédula")
+        sexo = c3.selectbox("Sexo", ["", "Masculino", "Femenino"])
+        
+        c4, c5, c6 = st.columns(3)
+        fecha_nac = c4.date_input("Fecha de Nacimiento")
+        edad = c5.number_input("Edad", min_value=0, max_value=120, step=1)
+        telefono = c6.text_input("Teléfono")
+        
+        direccion = st.text_input("Dirección")
+        
+        c7, c8 = st.columns(2)
+        antecedentes = c7.text_area("Antecedentes Patológicos")
+        alergias = c8.text_area("Alergias")
+        
+        medicamentos = st.text_area("Medicamentos Actuales")
+        
         doc    = st.text_input("Doctor que Registra *", value=st.session_state.doctor_name)
-        if st.form_submit_button("💾 REGISTRAR"):
+        
+        if st.form_submit_button("💾 REGISTRAR PACIENTE", use_container_width=True):
             if nombre.strip() and doc.strip():
-                database.registrar_paciente(nombre.strip(), doc.strip(), cedula.strip())
-                st.success("Registrado con éxito.")
-
-elif view == "historial":
-    st.markdown("### 📂 Historial")
-    busqueda = st.text_input("Buscar por nombre o cédula...")
-    pacientes = database.buscar_paciente(busqueda) if busqueda else database.obtener_todos_los_pacientes()
-    for p in pacientes:
-        with st.expander(f"👤 {p['nombre_completo']} ({p.get('cedula','')})"):
-            st.markdown(f"**Registrado:** {p['fecha_registro'][:10]}")
-
-elif view == "dashboard":
-    st.markdown("### 📊 Dashboard")
-    stats = database.stats_generales()
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Pacientes", stats["total_pacientes"])
-    c2.metric("Visitas", stats["total_visitas"])
-    c3.metric("Interacciones IA", stats["total_interacciones"])
+                # Convertir fecha a texto si existe
+                fn_str = str(fecha_nac) if fecha_nac else None
+                database.registrar_paciente(
+                    nombre_completo=nombre.strip(), 
+                    doctor_registro=doc.strip(), 
+                    cedula=cedula.strip() if cedula else None,
+                    fecha_nacimiento=fn_str,
+                    edad=int(edad) if edad else None,
+                    sexo=sexo if sexo else None,
+                    telefono=telefono.strip() if telefono else None,
+                    direccion=direccion.strip() if direccion else None,
+                    antecedentes=antecedentes.strip() if antecedentes else None,
+                    alergias=alergias.strip() if alergias else None,
+                    medicamentos_act=medicamentos.strip() if medicamentos else None
+                )
+                st.success("✅ Paciente registrado con éxito en la base de datos.")
+            else:
+                st.warning("⚠️ Complete los campos obligatorios (Nombre y Doctor).")
