@@ -1,6 +1,6 @@
 """
 app.py – Hospital Rísquez · OphthalmAI v3.7
-Diseño Arena.site — HUD Futurista, Doble Escáner Láser, Corrección de Markdown
+Diseño Arena.site — HUD Futurista, Doble Escáner Láser, Persistencia de Imágenes, DB Logging
 """
 
 import streamlit as st
@@ -9,6 +9,7 @@ import database
 import modelo_vision
 import base64
 import os
+import re  # Para el efecto typewriter mejorado y extracción de diagnósticos
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CONFIGURACIÓN
@@ -206,6 +207,10 @@ for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
+# Inicializar imagenes en session_state de forma segura
+if "current_images_bytes" not in st.session_state:
+    st.session_state.current_images_bytes = []
+
 # ──────────────────────────────────────────────────────────────────────────────
 # STRINGS DE HTML (Para evitar el error de Markdown)
 # ──────────────────────────────────────────────────────────────────────────────
@@ -294,6 +299,10 @@ with st.sidebar:
                 st.error("Complete los campos.")
     else:
         if st.button("⏹  FINALIZAR CONSULTA"):
+            # Limpiar imágenes pesadas de la RAM al cerrar
+            if "current_images_bytes" in st.session_state:
+                del st.session_state.current_images_bytes
+                
             for k, v in defaults.items():
                 if k != "session_idx":
                     st.session_state[k] = v
@@ -318,11 +327,16 @@ with st.sidebar:
             label_visibility="collapsed",
             key=f"up_{st.session_state.session_idx}",
         )
+        
+        # NUEVA LÓGICA: Guardamos las imágenes en session_state para que no se pierdan
         if uploaded_files:
+            st.session_state.current_images_bytes = [f.getvalue() for f in uploaded_files]
             cols = st.columns(min(len(uploaded_files), 2))
             for i, f in enumerate(uploaded_files):
                 cols[i % 2].image(f, use_container_width=True)
-            st.markdown('<div style="color:var(--teal);text-align:center;font-size:0.6rem;margin-top:5px;">✓ IMÁGENES LISTAS</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:var(--teal);text-align:center;font-size:0.6rem;margin-top:5px;">✓ IMÁGENES CARGADAS EN MEMORIA</div>', unsafe_allow_html=True)
+        elif "current_images_bytes" not in st.session_state:
+            st.session_state.current_images_bytes = []
 
     st.markdown('<div class="s-section">Especialidades</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -359,16 +373,14 @@ view = st.session_state.view
 if view == "chat":
 
     if not st.session_state.session_active:
-        # AQUI INYECTAMOS EL CÓDIGO HTML SIN QUE STREAMLIT LO CONVIERTA EN CÓDIGO TEXTO
         st.markdown(WELCOME_SCREEN_HTML, unsafe_allow_html=True)
 
     else:
         p = st.session_state.paciente_data
         ced_h = f'· CÉD:<span style="color:var(--text-main);"> {p["cedula"]}</span>' if p.get("cedula") else ""
         
-        # Corrección segura para contar imágenes cargadas
-        if "uploaded_files" not in dir(): uploaded_files =[]
-        n_imgs = len(uploaded_files) if uploaded_files else 0
+        # Obtener la cantidad de imágenes de forma segura desde session_state
+        n_imgs = len(st.session_state.get("current_images_bytes", []))
         img_h = (f'<div class="indicator"><div class="s-dot dot-img"></div>{n_imgs} IMG</div>'
                  if n_imgs else '<div class="indicator"><div class="s-dot dot-inactive"></div>SIN IMG</div>')
         
@@ -407,7 +419,8 @@ if view == "chat":
             try:
                 resumen = _generar_resumen(st.session_state.doctor_name, st.session_state.patient_name, st.session_state.messages).encode("utf-8")
                 st.download_button("⬇ Exportar resumen", data=resumen, file_name="consulta.txt")
-            except: pass
+            except Exception:
+                pass 
 
         st.markdown('<div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:6px;">// SÍNTOMAS RÁPIDOS</div>', unsafe_allow_html=True)
         cc = st.columns(4)
@@ -423,7 +436,8 @@ if view == "chat":
             with st.chat_message("user"): st.markdown(prompt)
             st.session_state.messages.append({"role": "user", "content": prompt})
 
-            lista_imgs =[f.getvalue() for f in uploaded_files] if uploaded_files else[]
+            # Le pasamos a la IA las imágenes seguras que están en session_state
+            lista_imgs = st.session_state.get("current_images_bytes", [])
 
             with st.chat_message("assistant"):
                 ph = st.empty()
@@ -433,15 +447,49 @@ if view == "chat":
                 except Exception as e:
                     respuesta_ia = f"⚠️ Error: `{e}`"
 
+                # Efecto typewriter mejorado que conserva saltos de línea y espacios
                 full_response = ""
-                for chunk in respuesta_ia.split():
-                    full_response += chunk + " "
+                tokens = re.split(r'(\s+)', respuesta_ia) 
+                
+                for token in tokens:
+                    full_response += token
                     ph.markdown(full_response + "▌")
-                    time.sleep(0.015)
+                    time.sleep(0.02 if token.strip() else 0) 
+                    
                 ph.markdown(full_response.strip())
 
             st.session_state.messages.append({"role": "assistant", "content": full_response.strip()})
             st.session_state.total_consultas += 1
+
+            # ══════════════════════════════════════════════════════════════
+            # GUARDAR INTERACCIÓN Y DIAGNÓSTICO EN LA BASE DE DATOS
+            # ══════════════════════════════════════════════════════════════
+            try:
+                tiene_img = bool(lista_imgs)
+                # 1. Guardamos el chat completo
+                database.registrar_consulta(
+                    doctor_nombre=st.session_state.doctor_name,
+                    paciente_nombre=st.session_state.patient_name,
+                    pregunta_doctor=prompt,
+                    respuesta_ia=full_response.strip(),
+                    tiene_imagen=tiene_img,
+                    visita_id=st.session_state.visita_id,
+                    paciente_id=st.session_state.patient_id
+                )
+                
+                # 2. Si la IA detectó algo clínico, actualizamos la tabla 'visitas'
+                if any(d in full_response for d in ["Úlcera Corneal", "Uveítis Anterior", "Segmento Sano", "Imagen dudosa"]):
+                    diag_match = re.search(r'Impresión Diagnóstica:(.*?)(💊|⚠️|$)', full_response, re.DOTALL)
+                    diag_text = diag_match.group(1).strip() if diag_match else "Detectado por IA"
+                    
+                    database.actualizar_visita(
+                        visita_id=st.session_state.visita_id,
+                        diagnostico_ia=diag_text[:250],
+                        tiene_imagen=tiene_img
+                    )
+            except Exception:
+                pass # Si la DB falla, no frenamos el chat
+            # ══════════════════════════════════════════════════════════════
 
 
 # ──────────────────────────────────────────────────────────────────────────────
