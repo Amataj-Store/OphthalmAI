@@ -477,7 +477,7 @@ if view == "chat":
 
         st.markdown('<div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:6px;">// SÍNTOMAS RÁPIDOS</div>', unsafe_allow_html=True)
         cc = st.columns(4)
-        chips =[("🔴 Ojo rojo", "ojo rojo"), ("💧 Secreción", "secreción"), ("⚡ Fotofobia", "fotofobia"), ("🌀 Dolor", "dolor")]
+        chips =[("🔴 Ojo rojo", "ojo rojo"), ("💧 Secreción", "secreción ocular"), ("⚡ Fotofobia", "fotofobia severa"), ("🌀 Dolor", "dolor ocular")]
         chip_prompt = None
         for i, (lbl, txt) in enumerate(chips):
             if cc[i].button(lbl, key=f"chip_{i}"): chip_prompt = txt
