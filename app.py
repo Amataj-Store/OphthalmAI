@@ -1,6 +1,6 @@
 """
-app.py – Hospital Rísquez · OphthalmAI v3.8.1
-Diseño Arena.site — HUD Futurista, Responsive, CSS Puro (Sin romper React)
+app.py – Hospital Rísquez · OphthalmAI v3.8
+Diseño Arena.site — Responsivo Celular/PC, Panel de Navegación Futurista, DB Logging
 """
 
 import streamlit as st
@@ -9,7 +9,7 @@ import database
 import modelo_vision
 import base64
 import os
-import re  # Para el efecto typewriter mejorado y extracción de diagnósticos
+import re
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CONFIGURACIÓN
@@ -44,7 +44,7 @@ def _generar_resumen(doctor: str, paciente: str, mensajes: list) -> str:
     from datetime import datetime
     lineas =[
         "=" * 62,
-        "   HOSPITAL RÍSQUEZ · OphthalmAI v3.8",
+        "   HOSPITAL RÍSQUEZ · OphthalmAI",
         "   RESUMEN DE CONSULTA OFTALMOLÓGICA",
         "=" * 62,
         f"Fecha:    {datetime.now().strftime('%d/%m/%Y %H:%M')}",
@@ -59,14 +59,14 @@ def _generar_resumen(doctor: str, paciente: str, mensajes: list) -> str:
         lineas.append(f"\n[{rol}]\n{msg['content']}\n")
     lineas +=[
         "=" * 62,
-        "Reporte generado por OphthalmAI v3.8 · Hospital Rísquez",
+        "Reporte generado por OphthalmAI · Hospital Rísquez",
         "Apoyo diagnóstico — criterio clínico del médico tratante.",
         "=" * 62,
     ]
     return "\n".join(lineas)
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CSS INMERSIVO (Arena.site + Responsive + Atacando Streamlit nativo)
+# CSS INMERSIVO (Arena.site + Doble Escáner + Responsive Mobile)
 # ──────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -95,22 +95,18 @@ st.markdown("""
     color: var(--text-main) !important;
     font-family: 'DM Sans', sans-serif;
 }
-
-/* SIDEBAR Y BOTÓN RETRÁCTIL */
 [data-testid="stSidebar"] {
     background: var(--navy-mid) !important;
     border-right: 1px solid var(--glass-brd) !important;
 }
-[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarExpandButton"] button {
+
+/* ── ESTILO BOTÓN DE HAMBURGUESA (CELULAR) ── */
+[data-testid="collapsedControl"] {
     color: var(--teal) !important;
-    background: rgba(0, 229, 216, 0.05) !important;
-    border: 1px solid var(--glass-brd) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 0 10px rgba(0,229,216,0.1) !important;
-}
-[data-testid="stSidebarCollapseButton"] button:hover, [data-testid="stSidebarExpandButton"] button:hover {
-    background: var(--teal) !important;
-    color: var(--void) !important;
+    background-color: var(--navy-mid) !important;
+    border: 1px solid var(--glass-brd);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,229,216,0.2);
 }
 
 /* LOGO SIDEBAR */
@@ -119,7 +115,7 @@ st.markdown("""
 .logo-title span { color:var(--teal); }
 .logo-sub { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text-muted); letter-spacing:2.5px; text-transform:uppercase; margin-top:2px; }
 
-/* OJO SIDEBAR */
+/* OJO SIDEBAR CON ESCÁNER */
 .eye-sidebar-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
 .eye-sidebar-inner { 
     position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden;
@@ -136,7 +132,7 @@ st.markdown("""
     border: 1px solid rgba(0,229,216,0.3); animation: radar-ring 3s ease-out infinite; pointer-events: none;
 }
 
-/* OJO GIGANTE CENTRAL */
+/* OJO GIGANTE CENTRAL CON ESCÁNER */
 .welcome-screen {
     position: relative; text-align: center; padding: 70px 20px;
     background: radial-gradient(circle at center, rgba(0,229,216,0.06) 0%, transparent 60%);
@@ -159,7 +155,7 @@ st.markdown("""
 .eye-hero-ring1 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,229,216,0.2); animation: radar-ring 4s ease-out infinite; pointer-events: none; }
 .eye-hero-ring2 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,207,255,0.1); animation: radar-ring 4s ease-out 2s infinite; pointer-events: none; }
 
-/* ANIMACIONES */
+/* ANIMACIONES GLOBALES */
 @keyframes scan-down { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
 @keyframes float-eye { 0% { transform: translateY(0px); } 50% { transform: translateY(-12px); } 100% { transform: translateY(0px); } }
 @keyframes radar-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
@@ -168,46 +164,62 @@ st.markdown("""
 .welcome-screen h2 { font-family:'Syne',sans-serif!important; font-weight:800; font-size:2rem; color:var(--text-main)!important; margin:0 0 8px!important; }
 .welcome-screen p { color:var(--text-muted); font-size:0.95rem; max-width:500px; margin:0 auto; line-height:1.8; }
 
-/* HEADER PRINCIPAL */
+/* HEADER Y DEMÁS UI */
 .hud-header{display:flex;align-items:center;padding:10px 0 20px;border-bottom:1px solid var(--glass-brd);margin-bottom:20px;}
 .hud-title h1{font-family:'Syne',sans-serif!important;font-weight:800!important;font-size:1.8rem!important;color:var(--text-main)!important;margin:0!important;}
 .hud-title h1 em{font-style:normal;color:var(--teal);}
 .hud-meta{margin-left:auto;text-align:right;font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--text-muted);}
 
-/* COMPONENTES UI */
-.model-badge{display:flex;align-items:center;gap:7px;background:rgba(0,229,216,0.05);border:1px solid rgba(0,229,216,0.18);border-radius:6px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin:8px 0 2px;}
-.mb-dot{width:6px;height:6px;background:var(--green-ok);border-radius:50%;box-shadow:0 0 6px var(--green-ok);flex-shrink:0;animation:blink 1.8s ease-in-out infinite;}
+/* ── PANEL DE BOTONES FUTURISTA (NAVEGACIÓN) ── */
+[data-testid="stSidebar"] .stButton > button {
+    background: rgba(0, 229, 216, 0.04) !important;
+    color: var(--teal) !important;
+    border: 1px solid rgba(0, 229, 216, 0.2) !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 0.70rem !important;
+    font-weight: 700 !important;
+    height: 45px !important;
+    border-radius: 6px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
+    width: 100% !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: var(--teal) !important;
+    color: var(--void) !important;
+    border: 1px solid var(--teal) !important;
+    box-shadow: 0 0 15px rgba(0, 229, 216, 0.5) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* CHIPS SINTOMAS */
+div[data-testid="column"] .stButton>button {
+    font-family:'DM Sans',sans-serif!important;font-size:0.72rem!important;font-weight:500!important;
+    padding:6px 4px!important;letter-spacing:0.3px!important;text-transform:none!important;
+    border-color:rgba(0,229,216,0.25)!important;color:var(--text-muted)!important;border-radius:20px!important;
+    transition:all 0.18s ease!important;white-space:nowrap; height: auto !important; box-shadow: none !important; background: transparent !important;
+}
+div[data-testid="column"] .stButton>button:hover {
+    border-color:var(--teal)!important;color:var(--teal)!important;background:rgba(0,229,216,0.06)!important;
+    box-shadow:0 0 10px rgba(0,229,216,0.2)!important;transform:translateY(-1px)!important;
+}
+
+.model-badge{display:flex;align-items:center;justify-content:center; gap:7px;background:rgba(0,229,216,0.05);border:1px solid rgba(0,229,216,0.18);border-radius:6px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin:8px 0 2px;}
 .s-section{font-family:'Space Mono',monospace;font-size:0.58rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:2px;padding:12px 0 5px;border-top:1px solid var(--glass-brd);margin-top:8px;}
 .s-info{background:rgba(0,229,216,0.03);border:1px solid var(--glass-brd);border-radius:8px;padding:10px 13px;font-size:0.8rem;color:var(--text-muted);line-height:1.65;margin-top:6px;}
-
 .session-card{background:var(--panel);border:1px solid var(--glass-brd);border-radius:10px;padding:12px 14px 12px 18px;margin-top:8px;position:relative;}
 .session-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--teal),var(--cyan));}
 .sc-label{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;}
 .sc-value{font-size:0.88rem;color:var(--text-main);font-weight:500;margin-top:1px;}
 
-/* TARJETAS HUD NATIVAS (Formularios, Metricas, Expanders) */
-[data-testid="stForm"] { background: var(--panel); border: 1px solid var(--glass-brd); border-radius: 12px; padding: 24px; backdrop-filter: blur(12px); }
-[data-testid="stFormSubmitButton"] button { background: var(--teal) !important; color: var(--void) !important; font-weight: 800 !important; border: none !important; }
-[data-testid="stVerticalBlock"] > [style*="flex-direction: column"] > [data-testid="stVerticalBlock"] { border: 1px solid var(--glass-brd); border-radius: 12px; padding: 15px; background: rgba(0,229,216,0.02); }
-
-/* DASHBOARD METRICS STYLING */
-[data-testid="stMetric"] { background: rgba(0,229,216,0.03); border: 1px solid var(--glass-brd); border-radius: 10px; padding: 20px; text-align: center; }
-[data-testid="stMetricLabel"] { color: var(--text-muted) !important; font-family: 'Space Mono', monospace !important; font-size: 0.7rem !important; text-transform: uppercase; }
-[data-testid="stMetricValue"] { color: var(--teal) !important; font-family: 'Syne', sans-serif !important; font-weight: 800 !important; font-size: 2rem !important; }
-
-/* INPUTS Y BOTONES */
 [data-testid="stSidebar"] label, .stTextInput label {font-family:'Space Mono',monospace!important;font-size:0.62rem!important;color:var(--text-muted)!important;text-transform:uppercase;}
 [data-testid="stSidebar"] input, .stTextInput input, textarea {background:rgba(5,10,20,0.9)!important;color:var(--teal)!important;border:1px solid var(--glass-brd)!important;border-radius:8px!important;font-family:'Space Mono',monospace!important;font-size:0.82rem!important;}
 [data-testid="stSidebar"] input:focus, textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(0,229,216,0.12)!important;}
 
-.stButton>button {background:transparent!important;color:var(--teal)!important;font-family:'Syne',sans-serif!important;font-weight:700!important;font-size:0.8rem!important;border:1px solid var(--teal)!important;border-radius:8px!important;padding:10px 20px!important;width:100%!important;transition:all 0.2s ease!important;}
-.stButton>button:hover {background:var(--teal)!important;color:var(--void)!important;box-shadow:0 0 20px rgba(0,229,216,0.4)!important;}
-div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!important;font-size:0.72rem!important;border-radius:20px!important;min-height:45px!important;}
-
-[data-testid="stChatMessage"]{background:var(--panel)!important;border:1px solid var(--glass-brd)!important;border-radius:12px!important;backdrop-filter:blur(12px);}
-[data-testid="stImage"] img{border-radius:10px!important;border:1px solid var(--glass-brd)!important;}
-[data-testid="stFileUploader"]{background:rgba(5,10,20,0.8)!important;border:1px dashed var(--glass-brd)!important;}
-[data-testid="stExpander"] { background: var(--panel) !important; border: 1px solid var(--glass-brd) !important; border-radius: 10px !important; margin-bottom: 8px !important; }
+[data-testid="stChatMessage"]{background:var(--panel)!important;border:1px solid var(--glass-brd)!important;border-radius:12px!important;backdrop-filter:blur(12px);}[data-testid="stImage"] img{border-radius:10px!important;border:1px solid var(--glass-brd)!important;}
+[data-testid="stFileUploader"]{background:rgba(5,10,20,0.8)!important;border:1px dashed var(--glass-brd)!important;}[data-testid="stExpander"] { background: var(--panel) !important; border: 1px solid var(--glass-brd) !important; border-radius: 10px !important; margin-bottom: 8px !important; }
 [data-testid="stExpander"] summary { font-family: 'Space Mono', monospace !important; font-size: 0.65rem !important; color: var(--text-muted) !important; text-transform: uppercase; letter-spacing: 1.5px; }
 
 .status-strip{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding:8px 16px;background:var(--panel);border:1px solid var(--glass-brd);border-radius:8px;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--text-muted);flex-wrap:wrap;}
@@ -215,20 +227,17 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
 .s-dot{width:7px;height:7px;border-radius:50%;}
 .dot-active{background:var(--green-ok);box-shadow:0 0 6px var(--green-ok);animation:blink 1.4s ease-in-out infinite;}
 .dot-inactive{background:var(--text-muted);}
-.dot-img{background:var(--amber);box-shadow:0 0 6px var(--amber);}
 
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--void);}::-webkit-scrollbar-thumb{background:var(--teal-dim);border-radius:2px;}
 
-/* RESPONSIVE MOBILE FIRST */
+/* ── RESPONSIVIDAD PARA TELÉFONOS CELULARES ── */
 @media (max-width: 768px) {
-    .hud-header { flex-direction: column; text-align: center; padding: 15px 0; }
-    .hud-meta { margin-left: 0; margin-top: 10px; text-align: center; }
-    .status-strip { flex-direction: column; gap: 8px; text-align: center; }
-    .eye-hero-wrap { width: 180px; height: 180px; }
-    .eye-hero-inner { width: 150px; height: 150px; }
-    .eye-hero-ring1, .eye-hero-ring2 { width: 170px; height: 170px; }
-    .welcome-screen h2 { font-size: 1.5rem; }
-    .welcome-screen { padding: 40px 10px; }
+    .eye-hero-wrap { transform: scale(0.65); margin-bottom: -10px; margin-top: -20px; }
+    .welcome-screen { padding: 30px 15px; margin-top: 10px; }
+    .hud-header { flex-direction: column; text-align: center; gap: 8px; padding-bottom: 10px; }
+    .hud-meta { margin: 0 auto; text-align: center; }
+    .status-strip { justify-content: center; text-align: center; gap: 10px; }
+    .ws-corner { width: 20px; height: 20px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -238,6 +247,7 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
 # ──────────────────────────────────────────────────────────────────────────────
 database.init_db()
 
+# DIAGNÓSTICO DEL MODELO DE IA
 if modelo_vision.ERROR_CARGA:
     st.error(modelo_vision.ERROR_CARGA, icon="🚨")
 
@@ -252,7 +262,7 @@ for k, v in defaults.items():
         st.session_state[k] = v
 
 if "current_images_bytes" not in st.session_state:
-    st.session_state.current_images_bytes = []
+    st.session_state.current_images_bytes =[]
 
 # ──────────────────────────────────────────────────────────────────────────────
 # STRINGS DE HTML
@@ -297,16 +307,19 @@ WELCOME_SCREEN_HTML = f"""
 with st.sidebar:
     st.markdown(SIDEBAR_LOGO_HTML, unsafe_allow_html=True)
 
-    st.markdown('<div class="s-section">Navegación</div>', unsafe_allow_html=True)
+    st.markdown('<div class="s-section">Panel de Control</div>', unsafe_allow_html=True)
+    
+    # Usamos use_container_width=True para que los botones sean idénticos en tamaño
     nc = st.columns(2)
-    if nc[0].button("💬 Consulta"):
+    if nc[0].button("💬 Consulta", use_container_width=True):
         st.session_state.view = "chat"; st.rerun()
-    if nc[1].button("📋 Registro"):
+    if nc[1].button("📋 Registro", use_container_width=True):
         st.session_state.view = "registro"; st.rerun()
+    
     nc2 = st.columns(2)
-    if nc2[0].button("📂 Historial"):
+    if nc2[0].button("📂 Historial", use_container_width=True):
         st.session_state.view = "historial"; st.rerun()
-    if nc2[1].button("📊 Dashboard"):
+    if nc2[1].button("📊 Dashboard", use_container_width=True):
         st.session_state.view = "dashboard"; st.rerun()
 
     st.markdown('<div class="s-section">Datos de la Consulta</div>', unsafe_allow_html=True)
@@ -314,7 +327,7 @@ with st.sidebar:
     patient_input = st.text_input("Paciente",           value=st.session_state.patient_name, disabled=st.session_state.session_active)
 
     if not st.session_state.session_active:
-        if st.button("▶  INICIAR SESIÓN"):
+        if st.button("▶ INICIAR SESIÓN", use_container_width=True):
             if doctor_input.strip() and patient_input.strip():
                 st.session_state.doctor_name    = doctor_input.strip()
                 st.session_state.patient_name   = patient_input.strip()
@@ -341,10 +354,9 @@ with st.sidebar:
             else:
                 st.error("Complete los campos.")
     else:
-        if st.button("⏹  FINALIZAR CONSULTA"):
+        if st.button("⏹ FINALIZAR CONSULTA", use_container_width=True):
             if "current_images_bytes" in st.session_state:
                 del st.session_state.current_images_bytes
-                
             for k, v in defaults.items():
                 if k != "session_idx":
                     st.session_state[k] = v
@@ -377,16 +389,7 @@ with st.sidebar:
                 cols[i % 2].image(f, use_container_width=True)
             st.markdown('<div style="color:var(--teal);text-align:center;font-size:0.6rem;margin-top:5px;">✓ IMÁGENES CARGADAS EN MEMORIA</div>', unsafe_allow_html=True)
         elif "current_images_bytes" not in st.session_state:
-            st.session_state.current_images_bytes = []
-
-    st.markdown('<div class="s-section">Especialidades</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="s-info">
-        ⚠️ <strong>Úlcera Corneal / Queratitis</strong><br>
-        🔵 <strong>Uveítis Anterior</strong><br>
-        ✅ <strong>Ojo Sano / Control</strong>
-    </div>
-    """, unsafe_allow_html=True)
+            st.session_state.current_images_bytes =[]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -420,7 +423,7 @@ if view == "chat":
         p = st.session_state.paciente_data
         ced_h = f'· CÉD:<span style="color:var(--text-main);"> {p["cedula"]}</span>' if p.get("cedula") else ""
         
-        n_imgs = len(st.session_state.get("current_images_bytes", []))
+        n_imgs = len(st.session_state.get("current_images_bytes",[]))
         img_h = (f'<div class="indicator"><div class="s-dot dot-img"></div>{n_imgs} IMG</div>'
                  if n_imgs else '<div class="indicator"><div class="s-dot dot-inactive"></div>SIN IMG</div>')
         
@@ -476,11 +479,12 @@ if view == "chat":
             with st.chat_message("user"): st.markdown(prompt)
             st.session_state.messages.append({"role": "user", "content": prompt})
 
-            lista_imgs = st.session_state.get("current_images_bytes", [])
+            lista_imgs = st.session_state.get("current_images_bytes",[])
 
             with st.chat_message("assistant"):
                 ph = st.empty()
-                ph.markdown('<span style="color:var(--teal);font-size:0.7rem;">// Procesando...</span>', unsafe_allow_html=True)
+                ph.markdown('<span style="color:var(--teal);font-family:Space Mono,monospace;font-size:0.7rem;">// Procesando con EfficientNetB0...</span>', unsafe_allow_html=True)
+                time.sleep(0.25)
                 try:
                     respuesta_ia = modelo_vision.analizar_imagen_y_sintomas(lista_imgs, prompt)
                 except Exception as e:
@@ -511,53 +515,43 @@ if view == "chat":
                     paciente_id=st.session_state.patient_id
                 )
                 
-                if any(d in full_response for d in ["Úlcera Corneal", "Uveítis Anterior", "Segmento Sano", "Imagen dudosa"]):
+                if any(d in full_response for d in["Úlcera Corneal", "Uveítis Anterior", "Segmento Sano", "Imagen dudosa"]):
                     diag_match = re.search(r'Impresión Diagnóstica:(.*?)(💊|⚠️|$)', full_response, re.DOTALL)
                     diag_text = diag_match.group(1).strip() if diag_match else "Detectado por IA"
-                    
                     database.actualizar_visita(
                         visita_id=st.session_state.visita_id,
                         diagnostico_ia=diag_text[:250],
                         tiene_imagen=tiene_img
                     )
             except Exception:
-                pass 
+                pass
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# VISTAS RESTANTES (Estilizadas vía CSS, sin romper React)
+# VISTAS RESTANTES (Registro, Historial, Dashboard)
 # ──────────────────────────────────────────────────────────────────────────────
 elif view == "registro":
     st.markdown("### 📋 Registro de Nuevo Paciente")
-    st.write("---") # Línea divisoria estilo HUD
     with st.form("form_reg", clear_on_submit=True):
         c1, c2 = st.columns(2)
         nombre = c1.text_input("Nombre Completo *")
         cedula = c2.text_input("Cédula")
         doc    = st.text_input("Doctor que Registra *", value=st.session_state.doctor_name)
-        if st.form_submit_button("💾 REGISTRAR PACIENTE"):
+        if st.form_submit_button("💾 REGISTRAR"):
             if nombre.strip() and doc.strip():
                 database.registrar_paciente(nombre.strip(), doc.strip(), cedula.strip())
-                st.success("✅ Paciente registrado con éxito en la base de datos.")
-            else:
-                st.warning("⚠️ Complete los campos obligatorios.")
+                st.success("Registrado con éxito.")
 
 elif view == "historial":
-    st.markdown("### 📂 Historial Clínico")
-    st.write("---")
-    busqueda = st.text_input("Buscar por nombre o cédula...", placeholder="Escriba aquí")
+    st.markdown("### 📂 Historial")
+    busqueda = st.text_input("Buscar por nombre o cédula...")
     pacientes = database.buscar_paciente(busqueda) if busqueda else database.obtener_todos_los_pacientes()
-    
-    if not pacientes:
-        st.info("No se encontraron pacientes.")
-    else:
-        for p in pacientes:
-            with st.expander(f"👤 {p['nombre_completo']} ({p.get('cedula','Sin Cédula')})"):
-                st.markdown(f"**Registrado:** {p['fecha_registro'][:10]}")
+    for p in pacientes:
+        with st.expander(f"👤 {p['nombre_completo']} ({p.get('cedula','')})"):
+            st.markdown(f"**Registrado:** {p['fecha_registro'][:10]}")
 
 elif view == "dashboard":
-    st.markdown("### 📊 Dashboard de Estadísticas")
-    st.write("---")
+    st.markdown("### 📊 Dashboard")
     stats = database.stats_generales()
     c1, c2, c3 = st.columns(3)
     c1.metric("Pacientes", stats["total_pacientes"])
