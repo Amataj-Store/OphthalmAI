@@ -12,38 +12,24 @@ import os
 DIRECTORIO_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 MODELO_PATH = os.path.join(DIRECTORIO_ACTUAL, "modelo_oftalmologia.h5")
 
-# Umbral clínico
+# Umbral clínico: Si la CNN no está al menos 50% segura, no arriesga diagnóstico
 UMBRAL_CONFIANZA = 50.0 
 
-# ════════════════════════════════════════════════════════
-# DIAGNÓSTICO DE CARGA DEL MODELO Y MANEJO DE ERRORES
-# ════════════════════════════════════════════════════════
 cnn_model = None
 clases_nombres = []
 ERROR_CARGA = None  
 
 if not os.path.exists(MODELO_PATH):
-    ERROR_CARGA = f"⚠️ ERROR DE SISTEMA: No se encuentra el archivo en la ruta: `{MODELO_PATH}`"
+    ERROR_CARGA = f"⚠️ ERROR DE SISTEMA: No se encuentra el archivo del modelo en la ruta: `{MODELO_PATH}`. El sistema funciona en Modo Simulado."
 else:
     try:
         import tensorflow as tf
-        
-        # TRUCO 1: Normalizar la ruta por si hay espacios o caracteres en español
-        # que a h5py le cuesta leer en Windows/Linux
         ruta_segura = os.path.normpath(MODELO_PATH)
-        
-        # TRUCO 2: Cargar sin compilar. Evita errores de metadatos de entrenamiento
-        # que suelen variar entre Colab y Local/Cloud.
         cnn_model = tf.keras.models.load_model(ruta_segura, compile=False)
-        
         clases_nombres = ['sano', 'ulcera', 'uveitis']
-        
     except Exception as e:
-        # Si aún falla, capturamos el error exacto con la ruta que intentó usar
-        ERROR_CARGA = f"⚠️ ERROR CARGANDO TENSORFLOW/MODELO en ruta `{ruta_segura}`: `{e}`"
+        ERROR_CARGA = f"⚠️ ERROR CARGANDO TENSORFLOW/MODELO en ruta `{ruta_segura}`: `{e}`. El sistema funciona en Modo Simulado."
         cnn_model = None
-# ════════════════════════════════════════════════════════
-
 
 def procesar_imagen_real(imagen_bytes):
     if cnn_model is None: 
@@ -74,14 +60,13 @@ PROTOCOLO_ULCERA = """**⚠️ PROTOCOLO: ÚLCERA CORNEAL / QUERATITIS INFECCIOS
 DISCLAIMER = "\n\n*⚠️ OphthalmAI es un sistema de apoyo. Confirmar siempre con lámpara de hendidura y criterio clínico.*"
 PREGUNTA_FINAL = "\n\n*Doctor, ¿qué desea hacer ahora? ¿Analizar otro síntoma, registrar la evolución o consultar un historial?*"
 
-# Reglas de síntomas para cuando NO hay imagen
 SINTOMAS_UVEITIS = ["fotofobia", "dolor ocular", "ojo rojo", "vision borrosa", "miosis", "tyndall"]
 SINTOMAS_ULCERA = ["secrecion", "lagrimeo", "dolor corneal", "mancha blanca", "hipopion", "queratitis"]
 
 def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
     texto = texto_doctor.lower().strip()
     
-        # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
+    # 1. PEDIR TRATAMIENTOS DIRECTAMENTE (SIN FOTO)
     if any(p in texto for p in ["tratamiento", "protocolo", "medicamento", "recet", "manejo"]):
         if "uveitis" in texto or "uveítis" in texto:
             return f"Claro, Doctor. Aquí tiene el manejo indicado:\n\n{PROTOCOLO_UVEITIS}{DISCLAIMER}{PREGUNTA_FINAL}"
@@ -103,8 +88,44 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
     if any(s in texto for s in ["hola", "buenos", "buenas", "saludos"]):
         return "¡Saludos, Doctor! Especialidad activa: **Úlceras y Uveítis**. ¿En qué le puedo ayudar hoy? Puede pedirme un tratamiento, subir una foto, o describir los síntomas."
 
-    # 4. SI DICE SÍNTOMAS PERO NO HAY FOTOS (Evita el bucle de "suba una foto")
-    if not lista_imagenes:
+    # 4. EVALUACIÓN DE IMÁGENES (Si hay fotos en el panel - CNN ACTIVA)
+    if lista_imagenes:
+        diagnosticos = []
+        
+        for i, img_bytes in enumerate(lista_imagenes):
+            clase_detectada, prob = procesar_imagen_real(img_bytes)
+            
+            if clase_detectada is None:
+                if any(s in texto for s in SINTOMAS_ULCERA):
+                    diagnosticos.append(f"Img {i+1}: Úlcera Corneal (Simulado)")
+                elif any(s in texto for s in SINTOMAS_UVEITIS):
+                    diagnosticos.append(f"Img {i+1}: Uveítis Anterior (Simulado)")
+                else:
+                    diagnosticos.append(f"Img {i+1}: Hallazgo indeterminado (Simulado)")
+            elif prob < UMBRAL_CONFIANZA:
+                diagnosticos.append(f"Img {i+1}: ⚠️ Imagen dudosa (CNN: {prob:.1f}% - {clase_detectada})")
+            else:
+                if clase_detectada == 'ulcera':
+                    diagnosticos.append(f"Img {i+1}: ⚠️ Úlcera Corneal (CNN: {prob:.1f}%)")
+                elif clase_detectada == 'uveitis':
+                    diagnosticos.append(f"Img {i+1}: 🔵 Uveítis Anterior (CNN: {prob:.1f}%)")
+                else:
+                    diagnosticos.append(f"Img {i+1}: ✅ Segmento Sano (CNN: {prob:.1f}%)")
+
+        texto_diagnosticos = "\n".join(diagnosticos)
+        protocolo_a_mostrar = ""
+        
+        if any("úlcer" in d.lower() for d in diagnosticos):
+            protocolo_a_mostrar = PROTOCOLO_ULCERA
+        elif any("uveít" in d.lower() for d in diagnosticos):
+            protocolo_a_mostrar = PROTOCOLO_UVEITIS
+        else:
+            protocolo_a_mostrar = "Sin alteraciones graves evidentes. Lágrimas artificiales si hay molestia."
+
+        return f"🩺 **Impresión Diagnóstica:**\n{texto_diagnosticos}\n\n💊 **Orientación Terapéutica:**\n{protocolo_a_mostrar}{DISCLAIMER}{PREGUNTA_FINAL}"
+    
+    # 5. NO HAY IMÁGENES, pero el doctor describió síntomas
+    else:
         puntaje_ulcera = sum(1 for s in SINTOMAS_ULCERA if s in texto)
         puntaje_uveitis = sum(1 for s in SINTOMAS_UVEITIS if s in texto)
         
@@ -116,7 +137,7 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
                 sospecha = "Uveítis Anterior"
                 protocolo = PROTOCOLO_UVEITIS
                 
-            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática con la IA, suba fotografías en el panel lateral.*{DISCLAIMER}{PREGUNTA_FINAL}"
+            return f"📝 **Orientación por Síntomas (Sin Imagen):**\nCon base en lo descrito, sospecha de **{sospecha}**.\n\n💊 **Orientación Terapéutica:**\n{protocolo}\n\n*Nota: Para probabilidad matemática, suba fotografías en el panel lateral.*{DISCLAIMER}{PREGUNTA_FINAL}"
         
-        # Si no hay imágenes y no hay síntomas claros (Fallback más amigable)
+        # 6. FALLBACK FINAL (Si no hay imágenes, ni síntomas, ni nada reconocible)
         return "Entendido, Doctor. Puede pedirme un protocolo médico directamente, describir síntomas del paciente, o subir fotografías al panel lateral para el análisis con IA. ¿Qué desea hacer?"
