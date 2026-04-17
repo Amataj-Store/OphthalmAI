@@ -1,6 +1,6 @@
 """
-app.py – Hospital Rísquez · OphthalmAI v3.8
-Diseño Arena.site — HUD Futurista, Responsive, Glassmorphism Cards
+app.py – Hospital Rísquez · OphthalmAI v3.8.1
+Diseño Arena.site — HUD Futurista, Responsive, CSS Puro (Sin romper React)
 """
 
 import streamlit as st
@@ -66,7 +66,7 @@ def _generar_resumen(doctor: str, paciente: str, mensajes: list) -> str:
     return "\n".join(lineas)
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CSS INMERSIVO (Arena.site + Responsive + Glassmorphism)
+# CSS INMERSIVO (Arena.site + Responsive + Atacando Streamlit nativo)
 # ──────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -96,13 +96,11 @@ st.markdown("""
     font-family: 'DM Sans', sans-serif;
 }
 
-/* SIDEBAR BASE */
+/* SIDEBAR Y BOTÓN RETRÁCTIL */
 [data-testid="stSidebar"] {
     background: var(--navy-mid) !important;
     border-right: 1px solid var(--glass-brd) !important;
 }
-
-/* BOTÓN RETRÁCTIL (EXPANDIR/RECOGER) FUTURISTA */
 [data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarExpandButton"] button {
     color: var(--teal) !important;
     background: rgba(0, 229, 216, 0.05) !important;
@@ -121,7 +119,7 @@ st.markdown("""
 .logo-title span { color:var(--teal); }
 .logo-sub { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text-muted); letter-spacing:2.5px; text-transform:uppercase; margin-top:2px; }
 
-/* OJO SIDEBAR CON ESCÁNER */
+/* OJO SIDEBAR */
 .eye-sidebar-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
 .eye-sidebar-inner { 
     position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden;
@@ -138,7 +136,7 @@ st.markdown("""
     border: 1px solid rgba(0,229,216,0.3); animation: radar-ring 3s ease-out infinite; pointer-events: none;
 }
 
-/* OJO GIGANTE CENTRAL CON ESCÁNER */
+/* OJO GIGANTE CENTRAL */
 .welcome-screen {
     position: relative; text-align: center; padding: 70px 20px;
     background: radial-gradient(circle at center, rgba(0,229,216,0.06) 0%, transparent 60%);
@@ -161,7 +159,7 @@ st.markdown("""
 .eye-hero-ring1 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,229,216,0.2); animation: radar-ring 4s ease-out infinite; pointer-events: none; }
 .eye-hero-ring2 { position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0,207,255,0.1); animation: radar-ring 4s ease-out 2s infinite; pointer-events: none; }
 
-/* ANIMACIONES GLOBALES */
+/* ANIMACIONES */
 @keyframes scan-down { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
 @keyframes float-eye { 0% { transform: translateY(0px); } 50% { transform: translateY(-12px); } 100% { transform: translateY(0px); } }
 @keyframes radar-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
@@ -187,23 +185,15 @@ st.markdown("""
 .sc-label{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;}
 .sc-value{font-size:0.88rem;color:var(--text-main);font-weight:500;margin-top:1px;}
 
-/* TARJETAS HUD (Glassmorphism para Registro, Historial, Dashboard) */
-.hud-card {
-    background: var(--panel);
-    border: 1px solid var(--glass-brd);
-    border-radius: 12px;
-    padding: 24px;
-    backdrop-filter: blur(12px);
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    min-height: 300px; /* Mantiene el tamaño uniforme */
-    display: flex;
-    flex-direction: column;
-}
-.hc-tr { position:absolute; top:0; right:0; width:20px; height:20px; border-top:2px solid var(--teal); border-right:2px solid var(--teal); opacity:0.4; }
-.hc-bl { position:absolute; bottom:0; left:0; width:20px; height:20px; border-bottom:2px solid var(--teal); border-left:2px solid var(--teal); opacity:0.4; }
-.hud-card-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:var(--text-main); margin-bottom:15px; border-bottom:1px solid var(--glass-brd); padding-bottom:10px; }
+/* TARJETAS HUD NATIVAS (Formularios, Metricas, Expanders) */
+[data-testid="stForm"] { background: var(--panel); border: 1px solid var(--glass-brd); border-radius: 12px; padding: 24px; backdrop-filter: blur(12px); }
+[data-testid="stFormSubmitButton"] button { background: var(--teal) !important; color: var(--void) !important; font-weight: 800 !important; border: none !important; }
+[data-testid="stVerticalBlock"] > [style*="flex-direction: column"] > [data-testid="stVerticalBlock"] { border: 1px solid var(--glass-brd); border-radius: 12px; padding: 15px; background: rgba(0,229,216,0.02); }
+
+/* DASHBOARD METRICS STYLING */
+[data-testid="stMetric"] { background: rgba(0,229,216,0.03); border: 1px solid var(--glass-brd); border-radius: 10px; padding: 20px; text-align: center; }
+[data-testid="stMetricLabel"] { color: var(--text-muted) !important; font-family: 'Space Mono', monospace !important; font-size: 0.7rem !important; text-transform: uppercase; }
+[data-testid="stMetricValue"] { color: var(--teal) !important; font-family: 'Syne', sans-serif !important; font-weight: 800 !important; font-size: 2rem !important; }
 
 /* INPUTS Y BOTONES */
 [data-testid="stSidebar"] label, .stTextInput label {font-family:'Space Mono',monospace!important;font-size:0.62rem!important;color:var(--text-muted)!important;text-transform:uppercase;}
@@ -227,16 +217,9 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
 .dot-inactive{background:var(--text-muted);}
 .dot-img{background:var(--amber);box-shadow:0 0 6px var(--amber);}
 
-/* DASHBOARD METRICS STYLING */
-[data-testid="stMetric"] { background: rgba(0,229,216,0.03); border: 1px solid var(--glass-brd); border-radius: 10px; padding: 15px; text-align: center; }
-[data-testid="stMetricLabel"] { color: var(--text-muted) !important; font-family: 'Space Mono', monospace !important; font-size: 0.7rem !important; text-transform: uppercase; }
-[data-testid="stMetricValue"] { color: var(--teal) !important; font-family: 'Syne', sans-serif !important; font-weight: 800 !important; font-size: 2rem !important; }
-
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--void);}::-webkit-scrollbar-thumb{background:var(--teal-dim);border-radius:2px;}
 
-/* ═══════════════════════════════════════ */
-/* RESPONSIVE MOBILE FIRST (Celulares)    */
-/* ═══════════════════════════════════════ */
+/* RESPONSIVE MOBILE FIRST */
 @media (max-width: 768px) {
     .hud-header { flex-direction: column; text-align: center; padding: 15px 0; }
     .hud-meta { margin-left: 0; margin-top: 10px; text-align: center; }
@@ -246,8 +229,6 @@ div[data-testid="column"] .stButton>button{font-family:'DM Sans',sans-serif!impo
     .eye-hero-ring1, .eye-hero-ring2 { width: 170px; height: 170px; }
     .welcome-screen h2 { font-size: 1.5rem; }
     .welcome-screen { padding: 40px 10px; }
-    .hud-card { min-height: auto; padding: 15px; }
-    .hud-card-title { font-size: 1rem; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -544,12 +525,11 @@ if view == "chat":
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# VISTAS RESTANTES (Envueltas en Tarjetas HUD)
+# VISTAS RESTANTES (Estilizadas vía CSS, sin romper React)
 # ──────────────────────────────────────────────────────────────────────────────
 elif view == "registro":
-    # Apertura de la tarjeta
-    st.markdown('<div class="hud-card"><div class="hc-tr"></div><div class="hc-bl"></div><div class="hud-card-title">📋 Registro de Nuevo Paciente</div>', unsafe_allow_html=True)
-    
+    st.markdown("### 📋 Registro de Nuevo Paciente")
+    st.write("---") # Línea divisoria estilo HUD
     with st.form("form_reg", clear_on_submit=True):
         c1, c2 = st.columns(2)
         nombre = c1.text_input("Nombre Completo *")
@@ -561,13 +541,10 @@ elif view == "registro":
                 st.success("✅ Paciente registrado con éxito en la base de datos.")
             else:
                 st.warning("⚠️ Complete los campos obligatorios.")
-    
-    # Cierre de la tarjeta
-    st.markdown('</div>', unsafe_allow_html=True)
 
 elif view == "historial":
-    st.markdown('<div class="hud-card"><div class="hc-tr"></div><div class="hc-bl"></div><div class="hud-card-title">📂 Historial Clínico</div>', unsafe_allow_html=True)
-    
+    st.markdown("### 📂 Historial Clínico")
+    st.write("---")
     busqueda = st.text_input("Buscar por nombre o cédula...", placeholder="Escriba aquí")
     pacientes = database.buscar_paciente(busqueda) if busqueda else database.obtener_todos_los_pacientes()
     
@@ -577,16 +554,12 @@ elif view == "historial":
         for p in pacientes:
             with st.expander(f"👤 {p['nombre_completo']} ({p.get('cedula','Sin Cédula')})"):
                 st.markdown(f"**Registrado:** {p['fecha_registro'][:10]}")
-                
-    st.markdown('</div>', unsafe_allow_html=True)
 
 elif view == "dashboard":
-    st.markdown('<div class="hud-card"><div class="hc-tr"></div><div class="hc-bl"></div><div class="hud-card-title">📊 Dashboard de Estadísticas</div>', unsafe_allow_html=True)
-    
+    st.markdown("### 📊 Dashboard de Estadísticas")
+    st.write("---")
     stats = database.stats_generales()
     c1, c2, c3 = st.columns(3)
     c1.metric("Pacientes", stats["total_pacientes"])
     c2.metric("Visitas", stats["total_visitas"])
     c3.metric("Interacciones IA", stats["total_interacciones"])
-    
-    st.markdown('</div>', unsafe_allow_html=True)
