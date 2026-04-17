@@ -497,6 +497,9 @@ if view == "chat":
                 time.sleep(0.25)
                 try:
                     respuesta_ia = modelo_vision.analizar_imagen_y_sintomas(lista_imgs, prompt)
+                    # RED DE SEGURIDAD: Si la IA devuelve vacío, evitamos el error
+                    if respuesta_ia is None:
+                        respuesta_ia = "⚠️ El motor no generó respuesta. Intente reformular."
                 except Exception as e:
                     respuesta_ia = f"⚠️ Error: `{e}`"
 
