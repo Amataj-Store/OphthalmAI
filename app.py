@@ -541,7 +541,7 @@ if view == "chat":
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# VISTAS RESTANTES (Registro, Historial, Dashboard)
+# VISTAS RESTANTES (Registro, Historial, Dashboard) - CON DEBUG SEGURO
 # ──────────────────────────────────────────────────────────────────────────────
 elif view == "registro":
     st.markdown("### 📋 Registro de Nuevo Paciente")
@@ -569,21 +569,51 @@ elif view == "registro":
         
         if st.form_submit_button("💾 REGISTRAR PACIENTE", use_container_width=True):
             if nombre.strip() and doc.strip():
-                # Convertir fecha a texto si existe
-                fn_str = str(fecha_nac) if fecha_nac else None
-                database.registrar_paciente(
-                    nombre_completo=nombre.strip(), 
-                    doctor_registro=doc.strip(), 
-                    cedula=cedula.strip() if cedula else None,
-                    fecha_nacimiento=fn_str,
-                    edad=int(edad) if edad else None,
-                    sexo=sexo if sexo else None,
-                    telefono=telefono.strip() if telefono else None,
-                    direccion=direccion.strip() if direccion else None,
-                    antecedentes=antecedentes.strip() if antecedentes else None,
-                    alergias=alergias.strip() if alergias else None,
-                    medicamentos_act=medicamentos.strip() if medicamentos else None
-                )
-                st.success("✅ Paciente registrado con éxito en la base de datos.")
+                try:
+                    fn_str = str(fecha_nac) if fecha_nac else None
+                    database.registrar_paciente(
+                        nombre_completo=nombre.strip(), 
+                        doctor_registro=doc.strip(), 
+                        cedula=cedula.strip() if cedula else None,
+                        fecha_nacimiento=fn_str,
+                        edad=int(edad) if edad else None,
+                        sexo=sexo if sexo else None,
+                        telefono=telefono.strip() if telefono else None,
+                        direccion=direccion.strip() if direccion else None,
+                        antecedentes=antecedentes.strip() if antecedentes else None,
+                        alergias=alergias.strip() if alergias else None,
+                        medicamentos_act=medicamentos.strip() if medicamentos else None
+                    )
+                    st.success("✅ Paciente registrado con éxito en la base de datos.")
+                except Exception as e:
+                    st.error(f"⚠️ Error guardando en base de datos: {e}")
             else:
                 st.warning("⚠️ Complete los campos obligatorios (Nombre y Doctor).")
+
+elif view == "historial":
+    st.markdown("### 📂 Historial Clínico")
+    st.write("---")
+    try:
+        busqueda = st.text_input("Buscar por nombre o cédula...", placeholder="Escriba aquí")
+        pacientes = database.buscar_paciente(busqueda) if busqueda else database.obtener_todos_los_pacientes()
+        
+        if not pacientes:
+            st.info("🔍 No se encontraron pacientes registrados en el sistema.")
+        else:
+            for p in pacientes:
+                with st.expander(f"👤 {p['nombre_completo']} ({p.get('cedula','Sin Cédula')})"):
+                    st.markdown(f"**Registrado:** {p['fecha_registro'][:10]}")
+    except Exception as e:
+        st.error(f"⚠️ Error cargando historial: {e}")
+
+elif view == "dashboard":
+    st.markdown("### 📊 Dashboard de Estadísticas")
+    st.write("---")
+    try:
+        stats = database.stats_generales()
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Pacientes", stats["total_pacientes"])
+        c2.metric("Visitas", stats["total_visitas"])
+        c3.metric("Interacciones IA", stats["total_interacciones"])
+    except Exception as e:
+        st.error(f"⚠️ Error cargando estadísticas: {e}")
