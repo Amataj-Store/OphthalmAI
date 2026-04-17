@@ -1,6 +1,6 @@
 """
 modelo_vision.py – Hospital Rísquez · OphthalmAI v3.8
-Motor Conversacional Inteligente + Umbrales Clínicos + Evaluación por Síntomas
+Motor Conversacional Inteligente + Umbrales Clínicos + Diagnóstico de Carga
 """
 
 import random
@@ -15,18 +15,31 @@ MODELO_PATH = os.path.join(DIRECTORIO_ACTUAL, "modelo_oftalmologia.h5")
 # Umbral clínico: Si la CNN no está al menos 50% segura, no arriesga diagnóstico
 UMBRAL_CONFIANZA = 50.0 
 
-try:
-    import tensorflow as tf
-    if os.path.exists(MODELO_PATH):
+# ════════════════════════════════════════════════════════
+# DIAGNÓSTICO DE CARGA DEL MODELO Y MANEJO DE ERRORES
+# ════════════════════════════════════════════════════════
+cnn_model = None
+clases_nombres = []
+ERROR_CARGA = None  # Aquí guardaremos el error si el modelo no carga
+
+# 1. Verificar si el archivo .h5 existe en la carpeta
+if not os.path.exists(MODELO_PATH):
+    ERROR_CARGA = f"⚠️ ERROR DE SISTEMA: No se encuentra el archivo del modelo en la ruta: `{MODELO_PATH}`. El sistema funciona en Modo Simulado."
+else:
+    # 2. Si existe, intentar importar TensorFlow y cargarlo
+    try:
+        import tensorflow as tf
         cnn_model = tf.keras.models.load_model(MODELO_PATH)
         clases_nombres = ['sano', 'ulcera', 'uveitis']
-    else:
+    except Exception as e:
+        ERROR_CARGA = f"⚠️ ERROR CARGANDO TENSORFLOW/MODELO: `{e}`. El sistema funciona en Modo Simulado."
         cnn_model = None
-except Exception:
-    cnn_model = None
+# ════════════════════════════════════════════════════════
+
 
 def procesar_imagen_real(imagen_bytes):
-    if cnn_model is None: return None, 0.0
+    if cnn_model is None: 
+        return None, 0.0
     try:
         img = Image.open(io.BytesIO(imagen_bytes)).convert('RGB')
         img = img.resize((224, 224))
@@ -36,7 +49,7 @@ def procesar_imagen_real(imagen_bytes):
         indice_clase = np.argmax(predicciones)
         prob = predicciones[indice_clase] * 100
         return clases_nombres[indice_clase], prob
-    except:
+    except Exception:
         return None, 0.0
 
 PROTOCOLO_UVEITIS = """**🔵 PROTOCOLO: UVEÍTIS ANTERIOR**
@@ -84,7 +97,7 @@ def analizar_imagen_y_sintomas(lista_imagenes: list, texto_doctor: str) -> str:
         for i, img_bytes in enumerate(lista_imagenes):
             clase_detectada, prob = procesar_imagen_real(img_bytes)
             
-            # Si TensorFlow no cargó, usamos reglas según el texto (Simulado)
+            # Si TensorFlow no cargó o falló la predicción, usamos reglas según el texto (Simulado)
             if clase_detectada is None:
                 if any(s in texto for s in SINTOMAS_ULCERA):
                     diagnosticos.append(f"Img {i+1}: Úlcera Corneal (Simulado)")
