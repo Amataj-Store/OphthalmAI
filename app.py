@@ -221,7 +221,7 @@ with st.sidebar:
     st.markdown(f"""
     <div class="sidebar-logo">
         <div class="eye-sidebar-wrap">
-            <img src="{EYE_SRC}" class="eye-sidebar-img">
+            <img src="{IMG_SRC}" class="eye-sidebar-img">
         </div>
         <div class="logo-title">Ophthalm<span>AI</span></div>
         <div class="logo-sub">Hospital Rísquez · Caracas</div>
