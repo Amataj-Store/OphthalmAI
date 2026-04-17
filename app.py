@@ -339,7 +339,7 @@ if view == "chat":
 
             <div class="eye-hero-wrap">
                 <div class="eye-hero-container">
-                    <img src="{EYE_SRC}" class="eye-hero-img">
+                    <img src="{IMG_SRC}" class="eye-hero-img">
                     <div class="scan-line-anim" style="top:-4px;"></div>
                 </div>
             </div>
