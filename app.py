@@ -170,8 +170,7 @@ st.markdown("""
 .hud-title h1 em{font-style:normal;color:var(--teal);}
 .hud-meta{margin-left:auto;text-align:right;font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--text-muted);}
 
-/* ── PANEL DE BOTONES FUTURISTA (NAVEGACIÓN) ── */
-[data-testid="stSidebar"] .stButton > button {
+/* ── PANEL DE BOTONES FUTURISTA (NAVEGACIÓN) ── */[data-testid="stSidebar"] .stButton > button {
     background: rgba(0, 229, 216, 0.04) !important;
     color: var(--teal) !important;
     border: 1px solid rgba(0, 229, 216, 0.2) !important;
@@ -390,7 +389,7 @@ with st.sidebar:
         elif "current_images_bytes" not in st.session_state:
             st.session_state.current_images_bytes =[]
 
-    # ── PEDACITO RECUPERADO: ESPECIALIDADES MÉDICAS ──
+    # ── ESPECIALIDADES MÉDICAS ──
     st.markdown('<div class="s-section">Especialidades</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="s-info">
@@ -451,7 +450,6 @@ if view == "chat":
             if len(visitas) > 1:
                 with st.expander(f"📂 {len(visitas)-1} visita(s) previa(s)", expanded=False):
                     for v in visitas[1:]:
-                        # LÍNEA REPARADA AQUÍ:
                         st.markdown(f"<div style='font-size:0.7rem; color:var(--text-muted);'>Visita #{v['numero_visita']} - {v['fecha_hora'][:10]}</div>", unsafe_allow_html=True)
 
         if st.session_state.visita_id and st.session_state.patient_id:
@@ -535,7 +533,6 @@ if view == "chat":
                     )
             except Exception:
                 pass
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # VISTAS RESTANTES (Registro, Historial, Dashboard)
