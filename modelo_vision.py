@@ -45,16 +45,32 @@ def procesar_imagen_real(imagen_bytes):
     except Exception:
         return None, 0.0
 
-PROTOCOLO_UVEITIS = """**🔵 PROTOCOLO: UVEÍTIS ANTERIOR**
-- **Esteroides Tópicos:** Acetato de Prednisolona 1% (estándar de oro). Dosis según grado celular (Tyndall). Reducción paulatina.
-- **Ciclopléjicos/Midriáticos:** Ciclopentolato 1% o Atropina 1% para prevenir sinequias posteriores y dolor.
-- **Control de PIO:** Evaluar presión intraocular por riesgo de hipertensión secundaria a esteroides."""
+PROTOCOLO_UVEITIS = """**🔵 PROTOCOLO: UVEÍTIS ANTERIOR (No Infecciosa)**
+*Objetivo: Suprimir inflamación y evitar sinequias posteriores.*
+- **Esteroides Tópicos (Pilar):** Acetato de Prednisolona 1% (Estándar de oro por alta penetración). Dosis de carga: 1 gota/hora en severos, luego reducción paulatina (tapering) para evitar rebote. *Alternativa:* Dexametasona 0.1% (menor penetración).
+- **Ciclopléjicos/Midriáticos:** Ciclopentolato 1% o Atropina 1% (reservar para inflamaciones intensas por su larga duración). Previene sinequias y alivia espasmo ciliar.
+- **Inmunomoduladores (Casos Crónicos/Recurrentes):** Si falla esteroide, evaluar Metotrexato o biológicos (Anti-TNF como Adalimumab) previa valoración sistémica.
+- ⚠️ **Control de PIO:** Monitorizar por riesgo de hipertensión secundaria a esteroides. Usar hipotensores si es necesario (Beta-bloqueantes/ICA)."""
 
 PROTOCOLO_ULCERA = """**⚠️ PROTOCOLO: ÚLCERA CORNEAL / QUERATITIS INFECCIOSA**
-- 🔴 **Toma de Muestra:** Cultivo y frotis (Gram/Giemsa) *ANTES* de la primera gota de antibiótico.
-- **Tratamiento Empírico (Bacteriana):** Fluoroquinolonas 4ta generación (Moxifloxacino) c/15-30 min.
-- **Tratamiento Reforzado:** Vancomicina + Ceftazidima alternados cada hora.
-- 🚫 **Contraindicación Absoluta:** No usar esteroides en fase activa infecciosa."""
+*Urgencia Oftalmológica. El manejo depende de la etiología.*
+🔴 **PASO 1 (CRÍTICO):** Toma de muestra para Cultivo y Frotis (Gram/Giemsa) **ANTES** de la primera gota de antibiótico. Limpiar secreciones previamente para asegurar biodisponibilidad del fármaco.
+
+**A. Queratitis Bacteriana (Empírica):**
+- **Monoterapia:** Fluoroquinolonas 4ta gen (Moxifloxacino) c/15-30 min (dosis carga 24-48h).
+- **Terapia Reforzada (Amenaza eje visual):** Vancomicina (Gram +) + Ceftazidima o Amikacina (Gram -) alternados cada hora.
+- 🚫 **Esteroides:** CONTRAINDICADOS en fase activa. Solo considerar cuando el epitelio esté cerrando y la bacteria controlada.
+
+**B. Queratitis Herpética (Viral - HSV):**
+- **Tópicos:** Ganciclovir gel (5 veces/día) o Aciclovir ungüento.
+- **Sistémicos:** Aciclovir 400mg (5 veces/día) o Valaciclovir 500mg (3 veces/día).
+- 🚫 **NUNCA** usar esteroides en úlcera dendrítica (epitelial), riesgo de úlcera geográfica.
+
+**C. Queratitis Fúngica:**
+- **Elección:** Natamicina 5% (hongos filamentosos).
+- **Alternativa:** Anfotericina B 0.15-0.5% (Candida/levaduras).
+
+💡 **Soporte:** Lágrimas artificiales sin conservantes para reepitelización. Control estricto de PIO."""
 
 DISCLAIMER = "\n\n*⚠️ OphthalmAI es un sistema de apoyo. Confirmar siempre con lámpara de hendidura y criterio clínico.*"
 
