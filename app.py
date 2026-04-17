@@ -34,7 +34,7 @@ if not b64_ojo:
     b64_ojo = get_base64_image("ojo_portada.jpg") 
 
 mime_type = "image/jpeg" if b64_ojo.startswith("/9j/") else "image/png"
-EYE_SRC = f"data:{mime_type};base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
+IMG_SRC = f"data:{mime_type};base64,{b64_ojo}" if b64_ojo else "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=500&q=80"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # UTILIDAD: generar resumen
